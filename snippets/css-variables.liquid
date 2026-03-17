@@ -1,18 +1,42 @@
 {% style %}
-  {% # Loads all font variantions with display: swap %}
-  {{ settings.type_primary_font | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-
   :root {
-    --font-primary--family: {{ settings.type_primary_font.family }}, {{ settings.type_primary_font.fallback_families }};
-    --font-primary--style: {{ settings.type_primary_font.style }};
-    --font-primary--weight: {{ settings.type_primary_font.weight }};
+    /* Brand colours */
+    --color-blue: #0060DD;
+    --color-purple: #6C00F9;
+    --color-red: #FF0004;
+    --color-section-bg: #F6F6F6;
+    --color-nav-bg: #D9D9D9;
+    --color-black: #000000;
+    --color-white: #FFFFFF;
+
+    /* Mapped to skeleton conventions so existing CSS keeps working */
+    --color-background: #FFFFFF;
+    --color-foreground: #000000;
+
+    /* Brand typefaces */
+    --font-pixel: 'Press Start 2P', cursive;
+    --font-pixel-sans: 'Pixelify Sans', cursive;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'Quantico', sans-serif;
+
+    /* Layout */
     --page-width: {{ settings.max_page_width }};
     --page-margin: {{ settings.min_page_margin }}px;
-    --color-background: {{ settings.background_color }};
-    --color-foreground: {{ settings.foreground_color }};
-    --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+
+    /* Header heights — top = blue marquee bar, bottom = gray nav bar */
+    --header-top-height: 58px;
+    --header-bottom-height: 128px;
+    --header-total-height: calc(var(--header-top-height) + var(--header-bottom-height));
+
+    /* Misc */
+    --style-border-radius-inputs: 0px;
+    --icon-stroke-width: 1.5;
+  }
+
+  @media screen and (max-width: 768px) {
+    :root {
+      --header-top-height: 48px;
+      --header-bottom-height: 80px;
+    }
   }
 {% endstyle %}

@@ -1,49 +1,537 @@
 {% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
+  Product page section.
+  Displays product media gallery, all metafields, variant selector, add-to-cart form,
+  Bandcamp embed, tracklist, physical info, and complementary products.
 
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
+  Metafields used:
+    custom.artist_name          — artist display name
+    custom.release_name         — alternate release title (falls back to product.title)
+    custom.catalog_number       — e.g. "HM-001"
+    custom.release_date         — ISO date string
+    custom.bandcamp_embed       — raw HTML embed (metafield type: html)
+    custom.tracklist            — multi-line text
+    custom.physical_object.info — physical format details
+    shopify--discovery--product_recommendation.complementary_products — list.product_reference
+
+  The add-to-cart form has data-product-form for JS interception in theme.js.
+  Variant changes update price + availability via data attributes read by theme.js.
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- assign artist = product.metafields.custom.artist_name -%}
+{%- assign release_name = product.metafields.custom.release_name | default: product.title -%}
+{%- assign catalog_number = product.metafields.custom.catalog_number -%}
+{%- assign release_date = product.metafields.custom.release_date -%}
+{%- assign tracklist = product.metafields.custom.tracklist -%}
+{%- assign physical_info = product.metafields.custom['physical_object.info'] -%}
+{%- assign complementary = product.metafields['shopify--discovery--product_recommendation']['complementary_products'] -%}
+
+<div class="product-page">
+  <div class="section-header-bar full-width">
+    <span class="section-header-bar__title">{{ release_name | upcase }}</span>
+  </div>
+
+  <div class="product-page__body full-width">
+    <div class="product-page__inner">
+
+      {%- comment %} Left: image gallery {%- endcomment %}
+      <div class="product-gallery">
+        <div class="product-gallery__main" id="product-gallery-main">
+          {%- if product.featured_image -%}
+            {{
+              current_variant.featured_image | default: product.featured_image
+              | image_url: width: 800, height: 800, crop: 'center'
+              | image_tag:
+                loading: 'eager',
+                class: 'product-gallery__main-image',
+                id: 'product-main-image',
+                alt: product.title
+            }}
+          {%- else -%}
+            <div class="product-gallery__placeholder" aria-hidden="true"></div>
+          {%- endif -%}
+        </div>
+
+        {%- if product.images.size > 1 -%}
+          <div class="product-gallery__thumbs" role="list" aria-label="Product images">
+            {%- for image in product.images limit: 8 -%}
+              <button
+                class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
+                data-image-src="{{ image | image_url: width: 800, height: 800, crop: 'center' }}"
+                data-image-alt="{{ image.alt | default: product.title | escape }}"
+                aria-label="View image {{ forloop.index }}"
+                role="listitem"
+                type="button"
+              >
+                {{
+                  image
+                  | image_url: width: 120, height: 120, crop: 'center'
+                  | image_tag: loading: 'lazy', class: 'product-gallery__thumb-image', alt: ''
+                }}
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment %} Right: product info + form {%- endcomment %}
+      <div class="product-info">
+
+        {%- if artist != blank -%}
+          <p class="product-info__artist">
+            <a href="{{ routes.collections_url }}/{{ artist | handleize }}" class="product-info__artist-link">
+              {{ artist }}
+            </a>
+          </p>
+        {%- endif -%}
+
+        <h1 class="product-info__title">{{ release_name }}</h1>
+
+        {%- if catalog_number != blank -%}
+          <p class="product-info__catalog">{{ catalog_number }}</p>
+        {%- endif -%}
+
+        {%- if release_date != blank -%}
+          <p class="product-info__date">{{ release_date }}</p>
+        {%- endif -%}
+
+        <p class="product-info__price" id="product-price" data-base-price="{{ current_variant.price }}">
+          {{ current_variant.price | money }}
+        </p>
+
+        {%- comment %} Add to cart form {%- endcomment %}
+        {%- form 'product', product, data-product-form: '', id: 'product-form' -%}
+          <input type="hidden" name="id" id="product-variant-id" value="{{ current_variant.id }}">
+
+          {%- if product.variants.size > 1 -%}
+            <fieldset class="product-variants">
+              <legend class="product-variants__label">Format</legend>
+              <div class="product-variants__options">
+                {%- for variant in product.variants -%}
+                  <label class="variant-option{% unless variant.available %} variant-option--unavailable{% endunless %}">
+                    <input
+                      type="radio"
+                      name="variant-select"
+                      value="{{ variant.id }}"
+                      data-price="{{ variant.price }}"
+                      data-available="{{ variant.available }}"
+                      {% if variant.id == current_variant.id %}checked{% endif %}
+                      {% unless variant.available %}disabled{% endunless %}
+                      class="variant-option__input sr-only"
+                    >
+                    <span class="variant-option__label">{{ variant.title }}</span>
+                  </label>
+                {%- endfor -%}
+              </div>
+            </fieldset>
+          {%- endif -%}
+
+          <div class="product-form__actions">
+            {%- if current_variant.available -%}
+              <button
+                type="submit"
+                class="btn-add-to-cart"
+                id="product-submit"
+                aria-label="Add {{ product.title | escape }} to cart"
+              >
+                Add to Cart
+              </button>
+            {%- else -%}
+              <button type="button" class="btn-add-to-cart btn-add-to-cart--sold-out" disabled aria-disabled="true">
+                Sold Out
+              </button>
+            {%- endif -%}
+          </div>
+
+          {%- if product.metafields.custom.bandcamp_embed != blank -%}
+            <div class="product-bandcamp" aria-label="Listen on Bandcamp">
+              {{ product.metafields.custom.bandcamp_embed }}
+            </div>
+          {%- endif -%}
+
+        {%- endform -%}
+
+      </div>
+    </div>
+
+    {%- comment %} Below-fold: description, tracklist, physical info {%- endcomment %}
+    {%- if product.description != blank or tracklist != blank or physical_info != blank -%}
+      <div class="product-details full-width">
+        <div class="product-details__inner">
+
+          {%- if product.description != blank -%}
+            <div class="product-details__section">
+              <h2 class="product-details__heading">About</h2>
+              <div class="product-details__body rte">{{ product.description }}</div>
+            </div>
+          {%- endif -%}
+
+          {%- if tracklist != blank -%}
+            <div class="product-details__section">
+              <h2 class="product-details__heading">Tracklist</h2>
+              <div class="product-details__body product-tracklist">{{ tracklist | newline_to_br }}</div>
+            </div>
+          {%- endif -%}
+
+          {%- if physical_info != blank -%}
+            <div class="product-details__section">
+              <h2 class="product-details__heading">Physical Details</h2>
+              <div class="product-details__body">{{ physical_info | newline_to_br }}</div>
+            </div>
+          {%- endif -%}
+
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- comment %} Complementary products {%- endcomment %}
+    {%- if complementary != blank -%}
+      <div class="product-complementary full-width">
+        <div class="section-header-bar full-width">
+          <span class="section-header-bar__title">YOU MIGHT ALSO LIKE</span>
+        </div>
+        <div class="product-complementary__inner">
+          {%- for rec_product in complementary.value limit: 6 -%}
+            {%- render 'product-card', product: rec_product -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
 </div>
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
+{% stylesheet %}
+  .product-page__body {
+    background: var(--color-section-bg);
+    padding: 2rem var(--page-margin);
+  }
 
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
+  .product-page__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
 
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
-          {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+  /* Gallery */
+  .product-gallery__main {
+    aspect-ratio: 1 / 1;
+    background: #ddd;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
 
-    <input type="text" name="quantity" min="1" value="1">
+  .product-gallery__main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
-</div>
+  .product-gallery__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #aaa;
+  }
+
+  .product-gallery__thumbs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .product-gallery__thumb {
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    border: 2px solid transparent;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .product-gallery__thumb.is-active,
+  .product-gallery__thumb:hover {
+    border-color: var(--color-blue);
+  }
+
+  .product-gallery__thumb:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .product-gallery__thumb-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Product info */
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .product-info__artist {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .product-info__artist-link {
+    color: var(--color-blue);
+    text-decoration: none;
+  }
+
+  .product-info__artist-link:hover {
+    text-decoration: underline;
+  }
+
+  .product-info__title {
+    font-family: var(--font-pixel-sans);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    color: var(--color-black);
+    margin: 0;
+  }
+
+  .product-info__catalog {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #555;
+  }
+
+  .product-info__date {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: #555;
+  }
+
+  .product-info__price {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--color-black);
+  }
+
+  /* Variant selector */
+  .product-variants {
+    border: none;
+    padding: 0;
+    margin: 0.25rem 0;
+  }
+
+  .product-variants__label {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .product-variants__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .variant-option {
+    cursor: pointer;
+  }
+
+  .variant-option__label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.4rem 0.875rem;
+    border: 2px solid var(--color-black);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .variant-option__input:checked + .variant-option__label {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .variant-option__input:focus-visible + .variant-option__label {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .variant-option--unavailable .variant-option__label {
+    opacity: 0.4;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  /* Add to cart */
+  .product-form__actions {
+    margin-top: 0.5rem;
+  }
+
+  .btn-add-to-cart {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: var(--color-red);
+    color: var(--color-white);
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    font-weight: 400;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-add-to-cart:hover:not(:disabled) {
+    background: #cc0003;
+  }
+
+  .btn-add-to-cart:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .btn-add-to-cart--sold-out {
+    background: #888;
+    cursor: not-allowed;
+  }
+
+  /* Bandcamp embed */
+  .product-bandcamp {
+    margin-top: 1rem;
+  }
+
+  .product-bandcamp iframe {
+    max-width: 100%;
+    border: 0;
+  }
+
+  /* Below-fold details */
+  .product-details {
+    background: var(--color-section-bg);
+    padding: 2rem var(--page-margin);
+  }
+
+  .product-details__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+    gap: 2.5rem;
+  }
+
+  .product-details__heading {
+    font-family: var(--font-pixel);
+    font-size: 0.625rem;
+    color: var(--color-black);
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem;
+  }
+
+  .product-details__body {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-black);
+  }
+
+  .product-tracklist {
+    white-space: pre-line;
+  }
+
+  /* Complementary products */
+  .product-complementary__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+    gap: 1.5rem;
+    padding: 2rem var(--page-margin);
+  }
+
+  /* Mobile */
+  @media screen and (max-width: 768px) {
+    .product-page__body {
+      padding: 1.5rem 1rem;
+    }
+
+    .product-page__inner {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .product-details {
+      padding: 1.5rem 1rem;
+    }
+
+    .product-complementary__inner {
+      padding: 1.5rem 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+      gap: 1rem;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  // Gallery thumbnail switching
+  document.querySelectorAll('.product-gallery__thumb').forEach(function(thumb) {
+    thumb.addEventListener('click', function() {
+      var mainImg = document.getElementById('product-main-image');
+      if (!mainImg) return;
+      mainImg.src = this.dataset.imageSrc;
+      mainImg.alt = this.dataset.imageAlt || '';
+      document.querySelectorAll('.product-gallery__thumb').forEach(function(t) {
+        t.classList.remove('is-active');
+      });
+      this.classList.add('is-active');
+    });
+  });
+
+  // Variant radio → update price + hidden input
+  document.querySelectorAll('.variant-option__input').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('product-variant-id').value = this.value;
+
+      var priceEl = document.getElementById('product-price');
+      if (priceEl && this.dataset.price) {
+        var cents = parseInt(this.dataset.price, 10);
+        priceEl.textContent = '$' + (cents / 100).toFixed(2);
+      }
+
+      var submitBtn = document.getElementById('product-submit');
+      if (submitBtn) {
+        var available = this.dataset.available === 'true';
+        submitBtn.disabled = !available;
+        submitBtn.textContent = available ? 'Add to Cart' : 'Sold Out';
+        if (available) {
+          submitBtn.classList.remove('btn-add-to-cart--sold-out');
+        } else {
+          submitBtn.classList.add('btn-add-to-cart--sold-out');
+        }
+      }
+    });
+  });
+{% endjavascript %}
 
 {% schema %}
 {
-  "name": "t:general.product",
+  "name": "Product",
   "settings": [],
   "disabled_on": {
     "groups": ["header", "footer"]

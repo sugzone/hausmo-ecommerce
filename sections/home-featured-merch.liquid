@@ -1,0 +1,88 @@
+{% comment %}
+  Home: Featured Apparel section.
+  Decorative area occupies first 2 grid columns of row 1.
+{% endcomment %}
+
+<div class="home-section home-section--merch">
+  <div class="section-header-bar full-width">
+    <span class="section-header-bar__title">{{ section.settings.header_text }}</span>
+  </div>
+
+  <div class="home-section__body full-width">
+    <div class="home-section__inner">
+      <div class="home-section__grid">
+        <div class="home-section__decorative" aria-hidden="true">
+          <img
+            src="{{ 'hausu-mountain-logo.png' | asset_url }}"
+            alt=""
+            class="home-section__logo"
+            width="128"
+            height="242"
+            onerror="this.style.display='none'"
+          >
+          <div class="home-section__brand">
+            <p class="home-section__tagline">{{ section.settings.tagline }}</p>
+            <p class="home-section__wordmark">Hausu Mountain</p>
+          </div>
+        </div>
+
+        {% assign featured_collection = section.settings.collection %}
+        {% if featured_collection != blank %}
+          {% for product in featured_collection.products limit: section.settings.product_count %}
+            {% render 'product-card', product: product %}
+          {% endfor %}
+        {% else %}
+          <p class="home-section__no-collection">
+            Select a collection in the theme editor to display products here.
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="home-section__footer">
+        <a href="{{ routes.collections_url }}/apparel" class="more-btn">more...</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Featured Merch",
+  "settings": [
+    {
+      "type": "text",
+      "id": "header_text",
+      "label": "Section header text",
+      "default": "CLOTHING & HOT ITEMS!"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Decorative tagline",
+      "default": "Garb Yourself In HausMo"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection to feature"
+    },
+    {
+      "type": "range",
+      "id": "product_count",
+      "label": "Number of products",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Merch"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

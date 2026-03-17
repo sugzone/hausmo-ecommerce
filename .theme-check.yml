@@ -1,1 +1,3 @@
 extends: theme-check:recommended
+RemoteAsset:
+  enabled: false

@@ -1,47 +1,268 @@
 {% comment %}
-  This section is used in the collection template to render collection page
-  listing all products within a collection.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
+  Collection page: filter sidebar (genre nav links) + product grid.
+  Used for Music, Apparel, and individual genre collection pages.
+  Sorting via Shopify's native sort_by URL param.
+  Genre links loop all collections filtered by custom.type == 'genre'.
 {% endcomment %}
 
-<h1>{{ collection.title }}</h1>
+<div class="collection-page">
+  <div class="section-header-bar full-width">
+    <span class="section-header-bar__title">{{ collection.title | upcase }}</span>
+  </div>
 
-<div class="collection-products">
-  {% paginate collection.products by 20 %}
-    {% for product in collection.products %}
-      <div class="collection-product">
-        {% if product.featured_image %}
-          {% render 'image',
-            class: 'collection-product__image',
-            image: product.featured_image,
-            url: product.url,
-            width: 400,
-            height: 400,
-            crop: 'center'
-          %}
-        {% endif %}
-        <div class="collection-product__content">
-          <p>{{ product.title | escape | link_to: product.url }}</p>
-          <p>{{ product.price | money }}</p>
+  <div class="collection-page__body full-width">
+    <div class="collection-page__inner">
+
+      {%- comment %} Sidebar: sort + genre filters {%- endcomment %}
+      <aside class="collection-sidebar" aria-label="Collection filters">
+        <div class="collection-sidebar__section">
+          <p class="collection-sidebar__heading">SORT</p>
+          <ul class="collection-sidebar__list" role="list">
+            {%- assign sort_options = collection.sort_options -%}
+            {%- for option in sort_options -%}
+              <li>
+                <a
+                  href="{{ collection.url }}?sort_by={{ option.value }}"
+                  class="collection-sidebar__link{% if collection.sort_by == option.value %} is-active{% endif %}"
+                  {% if collection.sort_by == option.value %}aria-current="true"{% endif %}
+                >
+                  {{ option.name }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
         </div>
-      </div>
-    {% endfor %}
 
-    {{ paginate | default_pagination }}
-  {% endpaginate %}
+        <div class="collection-sidebar__section">
+          <p class="collection-sidebar__heading">GENRE</p>
+          <ul class="collection-sidebar__list" role="list">
+            <li>
+              <a
+                href="{{ routes.collections_url }}/music"
+                class="collection-sidebar__link{% if collection.handle == 'music' %} is-active{% endif %}"
+                {% if collection.handle == 'music' %}aria-current="page"{% endif %}
+              >
+                All Music
+              </a>
+            </li>
+            {%- for c in collections -%}
+              {%- if c.metafields.custom.type == 'genre' -%}
+                <li>
+                  <a
+                    href="{{ c.url }}"
+                    class="collection-sidebar__link{% if collection.handle == c.handle %} is-active{% endif %}"
+                    {% if collection.handle == c.handle %}aria-current="page"{% endif %}
+                  >
+                    {{ c.title }}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      </aside>
+
+      {%- comment %} Product grid {%- endcomment %}
+      <div class="collection-grid">
+        {%- paginate collection.products by section.settings.products_per_page -%}
+          {%- if collection.products_count == 0 -%}
+            <p class="collection-grid__empty">No products found in this collection.</p>
+          {%- else -%}
+            <div class="collection-grid__products">
+              {%- for product in collection.products -%}
+                {%- render 'product-card', product: product -%}
+              {%- endfor -%}
+            </div>
+
+            {%- if paginate.pages > 1 -%}
+              <nav class="collection-pagination" aria-label="Pagination">
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="pagination-btn" rel="prev">← Prev</a>
+                {%- endif -%}
+
+                <span class="pagination-info">
+                  Page {{ paginate.current_page }} of {{ paginate.pages }}
+                </span>
+
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="pagination-btn" rel="next">Next →</a>
+                {%- endif -%}
+              </nav>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endpaginate -%}
+      </div>
+
+    </div>
+  </div>
 </div>
 
 {% stylesheet %}
-  .collection-products {
+  .collection-page__body {
+    background: var(--color-section-bg);
+    padding: 2rem var(--page-margin);
+  }
+
+  .collection-page__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* Sidebar */
+  .collection-sidebar {
+    position: sticky;
+    top: calc(var(--header-total-height) + 1.5rem);
+  }
+
+  .collection-sidebar__section {
+    margin-bottom: 2rem;
+  }
+
+  .collection-sidebar__heading {
+    font-family: var(--font-pixel);
+    font-size: 0.625rem;
+    color: var(--color-black);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .collection-sidebar__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .collection-sidebar__link {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--color-black);
+    text-decoration: none;
+    display: block;
+    padding: 0.25rem 0;
+  }
+
+  .collection-sidebar__link:hover {
+    text-decoration: underline;
+  }
+
+  .collection-sidebar__link.is-active {
+    font-weight: 700;
+    color: var(--color-blue);
+  }
+
+  .collection-sidebar__link:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  /* Product grid */
+  .collection-grid__products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .collection-grid__empty {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: #666;
+    grid-column: 1 / -1;
+  }
+
+  /* Pagination */
+  .collection-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 2rem 0 0;
+  }
+
+  .pagination-btn {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-black);
+    text-decoration: none;
+    border: 2px solid var(--color-black);
+    padding: 0.5rem 1rem;
+  }
+
+  .pagination-btn:hover {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .pagination-btn:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .pagination-info {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+
+  /* Mobile */
+  @media screen and (max-width: 768px) {
+    .collection-page__body {
+      padding: 1.5rem 1rem;
+    }
+
+    .collection-page__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .collection-sidebar {
+      position: static;
+    }
+
+    .collection-sidebar__section {
+      margin-bottom: 1rem;
+    }
+
+    .collection-sidebar__list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+    }
+
+    .collection-grid__products {
+      grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+      gap: 1rem;
+    }
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.collection",
-  "settings": []
+  "name": "Collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 12,
+      "max": 48,
+      "step": 4,
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
 }
 {% endschema %}
