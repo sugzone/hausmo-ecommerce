@@ -97,6 +97,18 @@
           <p class="product-info__date">{{ release_date }}</p>
         {%- endif -%}
 
+        {%- if physical_info != blank -%}
+            <div class="product-details__section">
+              <div class="product-details__body">{{ physical_info | newline_to_br }}</div>
+            </div>
+          {%- endif -%}
+
+        {%- if product.metafields.custom.bandcamp_embed != blank -%}
+            <div class="product-bandcamp" aria-label="Listen on Bandcamp">
+              {{ product.metafields.custom.bandcamp_embed }}
+            </div>
+        {%- endif -%}
+
         <p class="product-info__price" id="product-price" data-base-price="{{ current_variant.price }}">
           {{ current_variant.price | money }}
         </p>
@@ -145,12 +157,6 @@
             {%- endif -%}
           </div>
 
-          {%- if product.metafields.custom.bandcamp_embed != blank -%}
-            <div class="product-bandcamp" aria-label="Listen on Bandcamp">
-              {{ product.metafields.custom.bandcamp_embed }}
-            </div>
-          {%- endif -%}
-
         {%- endform -%}
 
       </div>
@@ -186,13 +192,6 @@
             <div class="product-details__section">
               <h2 class="product-details__heading">Tracklist</h2>
               <div class="product-details__body product-tracklist">{{ tracklist | newline_to_br }}</div>
-            </div>
-          {%- endif -%}
-
-          {%- if physical_info != blank -%}
-            <div class="product-details__section">
-              <h2 class="product-details__heading">Physical Details</h2>
-              <div class="product-details__body">{{ physical_info | newline_to_br }}</div>
             </div>
           {%- endif -%}
 
