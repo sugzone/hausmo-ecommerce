@@ -275,3 +275,69 @@ a {
     font-size: 1.25rem;
   }
 }
+
+/** Panel system
+ * Single source of truth for bordered content panels used across all pages.
+ * To change panel appearance (border, header style, body padding), update here.
+ */
+.panel-page {
+  width: min(calc(100% - 10vw), 1200px);
+  margin: 0 auto;
+  padding: 2vh 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-black);
+}
+
+.panel__header {
+  background: var(--color-blue);
+  padding: 0 1.5rem;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.panel__header-title {
+  font-family: var(--font-pixel);
+  font-size: 2rem;
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+.panel__body {
+  padding: 2vh 3vw;
+  background: var(--color-section-bg);
+}
+
+/** Main content area */
+#main-content {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-section-bg);
+}
+
+/** Section container backgrounds */
+.home-section,
+.artists-page,
+.collection-page {
+  background: var(--color-section-bg);
+}
+
+@media screen and (max-width: 768px) {
+  .panel-page {
+    width: calc(100% - 4vw);
+  }
+
+  .panel__header {
+    height: 3rem;
+  }
+
+  .panel__header-title {
+    font-size: 1rem;
+  }
+}

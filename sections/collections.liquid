@@ -1,63 +1,55 @@
 {% comment %}
   Artists page: lists all collections where custom.type == 'artist'.
-  Each artist card shows their featured image, name, and links to their collection.
+  Each artist card shows their featured image and name, links to their collection.
 {% endcomment %}
 
-<div class="artists-page">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">ARTISTS</span>
-  </div>
+<div class="artists-page full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <span class="panel__header-title">ARTISTS</span>
+      </div>
+      <div class="panel__body">
+        <div class="artists-grid">
+          {%- assign has_artists = false -%}
+          {%- for c in collections -%}
+            {%- if c.metafields.custom.type == 'artist' -%}
+              {%- assign has_artists = true -%}
+              <a href="{{ c.url }}" class="artist-card">
+                <div class="artist-card__image-wrap">
+                  {%- if c.featured_image -%}
+                    {{
+                      c.featured_image
+                      | image_url: width: 400, height: 400, crop: 'center'
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'artist-card__image',
+                        alt: c.title
+                    }}
+                  {%- else -%}
+                    <div class="artist-card__image artist-card__image--placeholder" aria-hidden="true"></div>
+                  {%- endif -%}
+                </div>
+                <p class="artist-card__name">{{ c.title }}</p>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
 
-  <div class="artists-page__body full-width">
-    <div class="artists-page__inner">
-      <div class="artists-grid">
-        {%- assign has_artists = false -%}
-        {%- for c in collections -%}
-          {%- if c.metafields.custom.type == 'artist' -%}
-            {%- assign has_artists = true -%}
-            <a href="{{ c.url }}" class="artist-card">
-              <div class="artist-card__image-wrap">
-                {%- if c.featured_image -%}
-                  {{
-                    c.featured_image
-                    | image_url: width: 400, height: 400, crop: 'center'
-                    | image_tag:
-                      loading: 'lazy',
-                      class: 'artist-card__image',
-                      alt: c.title
-                  }}
-                {%- else -%}
-                  <div class="artist-card__image artist-card__image--placeholder" aria-hidden="true"></div>
-                {%- endif -%}
-              </div>
-              <p class="artist-card__name">{{ c.title }}</p>
-            </a>
-          {%- endif -%}
-        {%- endfor -%}
-
-        {%- unless has_artists -%}
-          <p class="artists-grid__empty">No artists found.</p>
-        {%- endunless -%}
+          {%- unless has_artists -%}
+            <p class="artists-grid__empty">No artists found.</p>
+          {%- endunless -%}
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 {% stylesheet %}
-  .artists-page__body {
-    background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
-  }
-
-  .artists-page__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
-  }
-
   .artists-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 1vw;
+    row-gap: 1vh;
   }
 
   .artists-grid__empty {
@@ -104,18 +96,20 @@
   .artist-card__name {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.5rem;
     text-transform: uppercase;
+    text-decoration: underline;
   }
 
   @media screen and (max-width: 768px) {
-    .artists-page__body {
-      padding: 1.5rem 1rem;
-    }
-
     .artists-grid {
-      grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .artists-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 {% endstylesheet %}

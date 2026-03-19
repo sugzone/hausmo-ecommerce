@@ -1,85 +1,71 @@
 {% comment %}
   Home: Featured Releases section.
-  Decorative area (logo + wordmark + tagline) occupies the first 2 grid columns
-  of row 1. Products fill the remaining columns, then continue on subsequent rows.
+  Decorative area (logo + wordmark + tagline) spans first 2 columns of row 1.
+  6 products fill the remaining cells across 2 rows of 4 columns.
 {% endcomment %}
 
-<div class="home-section home-section--releases">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">{{ section.settings.header_text }}</span>
-  </div>
-
-  <div class="home-section__body full-width">
-    <div class="home-section__inner">
-      <div class="home-section__grid">
-        <!-- Decorative: spans first 2 columns of the grid -->
-        <div class="home-section__decorative" aria-hidden="true">
-          <img
-            src="{{ 'hausu-mountain-logo.png' | asset_url }}"
-            alt=""
-            class="home-section__logo"
-            width="128"
-            height="242"
-            onerror="this.style.display='none'"
-          >
-          <div class="home-section__brand">
-            <p class="home-section__tagline">{{ section.settings.tagline }}</p>
-            <p class="home-section__wordmark">Hausu Mountain</p>
+<div class="home-section home-section--releases full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <span class="panel__header-title">{{ section.settings.header_text }}</span>
+      </div>
+      <div class="panel__body">
+        <div class="home-releases__grid">
+          <!-- Decorative: spans first 2 columns of row 1 -->
+          <div class="home-releases__decorative" aria-hidden="true">
+            <img
+              src="{{ 'hausu-mountain-logo.png' | asset_url }}"
+              alt=""
+              class="home-section__logo"
+              width="128"
+              height="242"
+              onerror="this.style.display='none'"
+            >
+            <div class="home-section__brand">
+              <p class="home-section__tagline">{{ section.settings.tagline }}</p>
+              <p class="home-section__wordmark">Hausu Mountain</p>
+            </div>
           </div>
+
+          <!-- Products fill remaining cells -->
+          {%- assign featured_collection = section.settings.collection -%}
+          {%- if featured_collection != blank -%}
+            {%- for product in featured_collection.products limit: section.settings.product_count -%}
+              {%- render 'product-card', product: product -%}
+            {%- endfor -%}
+          {%- else -%}
+            <p class="home-section__no-collection">
+              Select a collection in the theme editor to display products here.
+            </p>
+          {%- endif -%}
         </div>
 
-        <!-- Products fill remaining grid cells -->
-        {% assign featured_collection = section.settings.collection %}
-        {% if featured_collection != blank %}
-          {% for product in featured_collection.products limit: section.settings.product_count %}
-            {% render 'product-card', product: product %}
-          {% endfor %}
-        {% else %}
-          <p class="home-section__no-collection">
-            Select a collection in the theme editor to display products here.
-          </p>
-        {% endif %}
-      </div>
-
-      <div class="home-section__footer">
-        <a href="{{ routes.collections_url }}/music" class="more-btn">more...</a>
+        <div class="home-section__footer">
+          <a href="{{ routes.collections_url }}/music" class="more-btn">more...</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 {% stylesheet %}
-  .home-section {
-    background: var(--color-section-bg);
-  }
-
-  .home-section__body {
-    background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
-  }
-
-  .home-section__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  /* 4-column grid; decorative spans cols 1-2 */
-  .home-section__grid {
+  /* 4 columns, 2 fixed-height rows; decorative spans cols 1–2 */
+  .home-releases__grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    align-items: start;
+    grid-template-rows: repeat(2, 325px);
+    column-gap: 1vw;
+    row-gap: 1vh;
   }
 
-  .home-section__decorative {
-    grid-column: 1 / 3;
+  .home-releases__decorative {
+    grid-column: span 2;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     gap: 1rem;
+    overflow: hidden;
   }
 
   .home-section__logo {
@@ -114,6 +100,7 @@
   .home-section__footer {
     display: flex;
     justify-content: flex-end;
+    margin-top: 1.5rem;
   }
 
   .home-section__no-collection {
@@ -124,13 +111,13 @@
   }
 
   @media screen and (max-width: 1024px) {
-    .home-section__grid {
+    .home-releases__grid {
       grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto;
     }
 
-    .home-section__decorative {
+    .home-releases__decorative {
       grid-column: 1 / -1;
-      flex-direction: row;
     }
 
     .home-section__tagline {
@@ -139,17 +126,9 @@
   }
 
   @media screen and (max-width: 768px) {
-    .home-section__body {
-      padding: 1.5rem 1rem;
-    }
-
-    .home-section__grid {
+    .home-releases__grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-    }
-
-    .home-section__decorative {
-      grid-column: 1 / -1;
+      column-gap: 2vw;
     }
 
     .home-section__tagline {
@@ -190,7 +169,7 @@
       "min": 2,
       "max": 12,
       "step": 1,
-      "default": 8
+      "default": 6
     }
   ],
   "presets": [

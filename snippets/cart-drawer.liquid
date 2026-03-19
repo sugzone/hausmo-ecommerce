@@ -19,10 +19,10 @@
         <span>Subtotal</span>
         <span class="cart-drawer__footer-subtotal"></span>
       </div>
-      <a href="{{ routes.cart_url }}" class="cart-drawer__view-cart">View cart</a>
       <form action="{{ routes.cart_url }}/checkout" method="post">
         <button type="submit" class="cart-drawer__checkout">Checkout</button>
       </form>
+      <button type="button" class="cart-drawer__continue" aria-label="Close cart and continue shopping">Continue Shopping</button>
     </div>
   </div>
 </dialog>
@@ -31,7 +31,7 @@
   .cart-drawer {
     position: fixed;
     inset: 0 0 0 auto;
-    width: min(420px, 100vw);
+    width: min(370px, 100vw);
     height: 100%;
     max-height: 100%;
     margin: 0;
@@ -39,6 +39,11 @@
     border: none;
     background: var(--color-white);
     color: var(--color-black);
+  }
+
+  /* Must use [open] selector — setting display on the element itself
+     overrides the browser's native dialog { display: none } default */
+  .cart-drawer[open] {
     display: flex;
     flex-direction: column;
   }
@@ -59,20 +64,21 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    background: var(--color-blue);
-    color: var(--color-white);
+    border-bottom: 1px solid var(--color-black);
     flex-shrink: 0;
   }
 
   .cart-drawer__heading {
-    font-family: var(--font-pixel);
+    font-family: var(--font-sans);
+    font-weight: 700;
     font-size: 1rem;
+    color: var(--color-black);
   }
 
   .cart-drawer__close {
     background: none;
     border: none;
-    color: var(--color-white);
+    color: var(--color-black);
     font-size: 1.25rem;
     cursor: pointer;
     padding: 0.25rem;
@@ -85,7 +91,7 @@
   }
 
   .cart-drawer__close:focus-visible {
-    outline: 2px solid var(--color-white);
+    outline: 2px solid var(--color-blue);
     outline-offset: 2px;
   }
 
@@ -126,7 +132,7 @@
   .cart-drawer__item-title {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 1rem;
     text-decoration: none;
     color: var(--color-black);
   }
@@ -207,39 +213,45 @@
     font-size: 1rem;
   }
 
-  .cart-drawer__view-cart {
-    display: block;
-    text-align: center;
-    padding: 0.75rem;
-    border: 2px solid var(--color-black);
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    text-decoration: none;
-    color: var(--color-black);
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .cart-drawer__checkout {
     width: 100%;
     padding: 0.75rem;
-    background: var(--color-red);
+    background: var(--color-black);
     border: none;
     color: var(--color-white);
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
     min-height: 44px;
   }
 
   .cart-drawer__checkout:hover {
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .cart-drawer__checkout:focus-visible {
-    outline: 2px solid var(--color-black);
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .cart-drawer__continue {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--color-black);
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: center;
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .cart-drawer__continue:focus-visible {
+    outline: 2px solid var(--color-blue);
     outline-offset: 2px;
   }
 {% endstylesheet %}

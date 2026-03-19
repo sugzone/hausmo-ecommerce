@@ -23,9 +23,9 @@
     --page-width: {{ settings.max_page_width }};
     --page-margin: {{ settings.min_page_margin }}px;
 
-    /* Header heights — top = blue marquee bar, bottom = gray nav bar */
-    --header-top-height: 58px;
-    --header-bottom-height: 128px;
+    /* Header heights — top = blue logo/title bar, bottom = gray nav bar */
+    --header-top-height: 90px;
+    --header-bottom-height: 80px;
     --header-total-height: calc(var(--header-top-height) + var(--header-bottom-height));
 
     /* Misc */
@@ -35,8 +35,8 @@
 
   @media screen and (max-width: 768px) {
     :root {
-      --header-top-height: 48px;
-      --header-bottom-height: 80px;
+      --header-top-height: 60px;
+      --header-bottom-height: 60px;
     }
   }
 {% endstyle %}

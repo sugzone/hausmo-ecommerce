@@ -26,7 +26,8 @@ function formatMoneyFromDecimal(dollars) {
  */
 const cartDrawer = document.getElementById('cart-drawer');
 const cartBtns   = document.querySelectorAll('.header__cart-btn');
-const cartClose  = document.querySelector('.cart-drawer__close');
+const cartClose    = document.querySelector('.cart-drawer__close');
+const cartContinue = document.querySelector('.cart-drawer__continue');
 
 function openCartDrawer() {
   if (!cartDrawer) return;
@@ -47,6 +48,7 @@ function closeCartDrawer() {
 
 cartBtns.forEach(btn => btn.addEventListener('click', openCartDrawer));
 cartClose?.addEventListener('click', closeCartDrawer);
+cartContinue?.addEventListener('click', closeCartDrawer);
 
 // Close when clicking the backdrop (outside the dialog box)
 cartDrawer?.addEventListener('click', (e) => {

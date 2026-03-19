@@ -1,57 +1,72 @@
 {% comment %}
-  Displays genre collections as image buttons.
-  Loops through all collections and filters by metafield custom.type == 'genre'.
-  Each button uses the collection's featured_image as background and title as label.
+  Home: Genres section.
+  Decorative text spans 2 columns × 2 rows of the genre grid.
+  Genre collection buttons fill the remaining grid cells.
   Font size starts at 44px and scales down via JS (theme.js: scaleGenreButtons).
 {% endcomment %}
 
-<div class="home-section home-section--genres">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">{{ section.settings.header_text }}</span>
-  </div>
-
-  <div class="home-section__body full-width">
-    <div class="home-section__inner">
-      <div class="home-section__decorative" aria-hidden="true">
-        <p class="home-section__tagline">{{ section.settings.tagline }}</p>
-        <p class="home-section__wordmark">Hausu Mountain</p>
+<div class="home-section home-section--genres full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <span class="panel__header-title">{{ section.settings.header_text }}</span>
       </div>
+      <div class="panel__body">
+        <div class="genres-grid">
+          <!-- Decorative: spans 2 cols × 2 rows -->
+          <div class="genres-decorative" aria-hidden="true">
+            <p class="home-section__tagline">{{ section.settings.tagline }}</p>
+            <p class="home-section__wordmark">Hausu Mountain</p>
+          </div>
 
-      <div class="genre-grid">
-        {% for c in collections %}
-          {% if c.metafields.custom.type == 'genre' %}
-            <a
-              href="{{ c.url }}"
-              class="genre-btn"
-              aria-label="{{ c.title }}"
-            >
-              {% if c.featured_image %}
-                {{
-                  c.featured_image
-                  | image_url: width: 400, height: 400, crop: 'center'
-                  | image_tag:
-                    loading: 'lazy',
-                    class: 'genre-btn__bg',
-                    alt: '',
-                    aria-hidden: 'true'
-                }}
-              {% else %}
-                <div class="genre-btn__bg genre-btn__bg--placeholder" aria-hidden="true"></div>
-              {% endif %}
-              <span class="genre-btn__text" aria-hidden="true">{{ c.title }}</span>
-            </a>
-          {% endif %}
-        {% endfor %}
+          {%- for c in collections -%}
+            {%- if c.metafields.custom.type == 'genre' -%}
+              <a
+                href="{{ c.url }}"
+                class="genre-btn"
+                aria-label="{{ c.title }}"
+              >
+                {%- if c.featured_image -%}
+                  {{
+                    c.featured_image
+                    | image_url: width: 400, height: 400, crop: 'center'
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'genre-btn__bg',
+                      alt: '',
+                      aria-hidden: 'true'
+                  }}
+                {%- else -%}
+                  <div class="genre-btn__bg genre-btn__bg--placeholder" aria-hidden="true"></div>
+                {%- endif -%}
+                <span class="genre-btn__text" aria-hidden="true">{{ c.title }}</span>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 {% stylesheet %}
-  .genre-grid {
+  /* 4 cols, 5 rows of 90px each; decorative spans 2×2 */
+  .genres-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 90px);
+    column-gap: 1vw;
+    row-gap: 1vh;
+  }
+
+  .genres-decorative {
+    grid-column: span 2;
+    grid-row: span 2;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    overflow: hidden;
   }
 
   .genre-btn {
@@ -59,14 +74,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 200px;
-    height: 90px;
     overflow: hidden;
     text-decoration: none;
     border-style: outset;
     border-width: 2px;
     border-color: #888;
-    flex-shrink: 0;
   }
 
   .genre-btn:focus-visible {
@@ -102,12 +114,12 @@
     font-weight: 700;
     font-size: 44px; /* JS scales this down as needed */
     color: var(--color-white);
-    /* Black outline via text-shadow — accessible alternative to -webkit-text-stroke */
     text-shadow:
       -2px -2px 0 #000,
        2px -2px 0 #000,
       -2px  2px 0 #000,
        2px  2px 0 #000;
+    letter-spacing: 0.16em;
     white-space: normal;
     word-break: keep-all;
     overflow-wrap: normal;
@@ -117,15 +129,13 @@
   }
 
   @media screen and (max-width: 768px) {
-    .genre-btn {
-      width: calc(50% - 0.375rem);
-      height: 80px;
+    .genres-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
-  }
 
-  @media screen and (max-width: 480px) {
-    .genre-btn {
-      width: 100%;
+    .genres-decorative {
+      grid-column: 1 / -1;
+      grid-row: span 1;
     }
   }
 {% endstylesheet %}

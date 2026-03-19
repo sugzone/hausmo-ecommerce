@@ -2,19 +2,29 @@
   assign current_path = request.path
 %}
 
-<header class="site-header" role="banner">
-  <!-- Top bar: scrolling marquee -->
-  <div class="header__top" aria-hidden="true">
-    <div class="header__marquee" role="presentation">
-      <span class="header__marquee-track">
-        {%- for i in (1..10) -%}
-          Hausu Mountain E-Shoppe &nbsp;&nbsp;&nbsp;&nbsp;
-        {%- endfor -%}
-      </span>
-    </div>
+<header class="site-header full-width" role="banner">
+  <!-- Top bar: logo + site name (blue) -->
+  <div class="header__top">
+    {%- if section.settings.logo != blank -%}
+      {{
+        section.settings.logo
+        | image_url: width: 78, height: 78
+        | image_tag: alt: shop.name, class: 'header__logo-img', loading: 'eager'
+      }}
+    {%- else -%}
+      <img
+        src="{{ 'hausu-mountain-logo.png' | asset_url }}"
+        alt="{{ shop.name }}"
+        class="header__logo-img"
+        width="42"
+        height="78"
+        onerror="this.style.display='none'"
+      >
+    {%- endif -%}
+    <span class="header__site-name">Hausu Mountain E-Shoppe</span>
   </div>
 
-  <!-- Bottom bar: logo (center) + navigation -->
+  <!-- Bottom bar: nav + search/cart (gray) -->
   <div class="header__bottom">
     <nav class="header__nav" aria-label="Main navigation">
       <div class="header__nav-left">
@@ -37,21 +47,12 @@
         </a>
 
         <a
-          href="{{ routes.collections_url }}/genres"
-          class="header__nav-item{% if current_path contains '/collections/genres' %} is-active{% endif %}"
-          {% if current_path contains '/collections/genres' %}aria-current="page"{% endif %}
-        >
-          <img src="{{ 'genres.svg' | asset_url }}" alt="" aria-hidden="true" class="header__nav-icon" width="48" height="48">
-          <span class="header__nav-label">Genres</span>
-        </a>
-
-        <a
           href="{{ routes.collections_url }}/apparel"
           class="header__nav-item{% if current_path contains '/collections/apparel' %} is-active{% endif %}"
           {% if current_path contains '/collections/apparel' %}aria-current="page"{% endif %}
         >
           <img src="{{ 'apparel.svg' | asset_url }}" alt="" aria-hidden="true" class="header__nav-icon" width="48" height="48">
-          <span class="header__nav-label">Apparel</span>
+          <span class="header__nav-label">Merch</span>
         </a>
 
         <a
@@ -63,26 +64,6 @@
           <span class="header__nav-label">Artists</span>
         </a>
       </div>
-
-      <!-- Center logo -->
-      <a href="{{ routes.root_url }}" class="header__logo" aria-label="{{ shop.name }} home">
-        {%- if section.settings.logo != blank -%}
-          {{
-            section.settings.logo
-            | image_url: width: 62, height: 116
-            | image_tag: alt: shop.name, class: 'header__logo-img', loading: 'eager'
-          }}
-        {%- else -%}
-          <img
-            src="{{ 'hausu-mountain-logo.png' | asset_url }}"
-            alt="{{ shop.name }}"
-            class="header__logo-img"
-            width="42"
-            height="78"
-            onerror="this.style.display='none'"
-          >
-        {%- endif -%}
-      </a>
 
       <div class="header__nav-right">
         <button
@@ -120,45 +101,35 @@
     top: 0;
     z-index: 100;
     width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Top bar: blue marquee */
+  /* Top bar: blue, logo + site name */
   .header__top {
     background: var(--color-blue);
     height: var(--header-top-height);
-    overflow: hidden;
     display: flex;
     align-items: center;
+    padding: 0 1.5rem;
+    gap: 1.25rem;
   }
 
-  .header__marquee {
-    width: 100%;
-    overflow: hidden;
+  .header__logo-img {
+    height: 78px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
   }
 
-  .header__marquee-track {
-    display: inline-block;
-    white-space: nowrap;
+  .header__site-name {
     font-family: var(--font-pixel);
     font-size: 1.5rem;
     color: var(--color-white);
-    animation: marquee 30s linear infinite;
-    padding-left: 100%;
+    white-space: nowrap;
   }
 
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .header__marquee-track {
-      animation: none;
-      padding-left: 1.5rem;
-    }
-  }
-
-  /* Bottom bar: gray nav */
+  /* Bottom bar: gray, nav only */
   .header__bottom {
     background: var(--color-nav-bg);
     height: var(--header-bottom-height);
@@ -167,7 +138,7 @@
     padding: 0 1.5rem;
   }
 
-  /* Nav layout: left group | center logo | right group */
+  /* Nav: left cluster | right cluster, space between */
   .header__nav {
     flex: 1;
     display: flex;
@@ -180,20 +151,6 @@
     display: flex;
     align-items: center;
     gap: 2rem;
-  }
-
-  /* Center logo */
-  .header__logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .header__logo-img {
-    height: 78px;
-    width: auto;
-    display: block;
   }
 
   /* Nav items */
@@ -265,6 +222,19 @@
 
   /* Mobile */
   @media screen and (max-width: 768px) {
+    .header__top {
+      padding: 0 1rem;
+      gap: 0.75rem;
+    }
+
+    .header__logo-img {
+      height: 48px;
+    }
+
+    .header__site-name {
+      font-size: 0.875rem;
+    }
+
     .header__bottom {
       padding: 0 1rem;
     }
@@ -282,14 +252,6 @@
       width: 1.75rem;
       height: 1.75rem;
     }
-
-    .header__logo-img {
-      height: 48px;
-    }
-
-    .header__marquee-track {
-      font-size: 0.875rem;
-    }
   }
 
   @media screen and (max-width: 480px) {
@@ -297,10 +259,7 @@
       display: none;
     }
 
-    .header__nav-left {
-      gap: 0.5rem;
-    }
-
+    .header__nav-left,
     .header__nav-right {
       gap: 0.5rem;
     }

@@ -1,96 +1,195 @@
 {% comment %}
-  Collection page: filter sidebar (genre nav links) + product grid.
-  Used for Music, Apparel, and individual genre collection pages.
-  Sorting via Shopify's native sort_by URL param.
-  Genre links loop all collections filtered by custom.type == 'genre'.
+  Collection page: two side-by-side panels — filter sidebar + product grid.
+  Both panels use the shared panel system from critical.css.
+  Filter content is kept as-is per spec.
+  Sort options mapped to Shopify native sort_by URL param.
+  Pagination uses IBM Plex Mono numeric style.
 {% endcomment %}
 
-<div class="collection-page">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">{{ collection.title | upcase }}</span>
-  </div>
+{%- assign current_sort = collection.sort_by | default: collection.default_sort_by -%}
 
-  <div class="collection-page__body full-width">
-    <div class="collection-page__inner">
+<div class="collection-page full-width">
+  <div class="panel-page">
+    <div class="collection-page__layout">
 
-      {%- comment %} Sidebar: sort + genre filters {%- endcomment %}
-      <aside class="collection-sidebar" aria-label="Collection filters">
-        <div class="collection-sidebar__section">
-          <p class="collection-sidebar__heading">SORT</p>
-          <ul class="collection-sidebar__list" role="list">
-            {%- assign sort_options = collection.sort_options -%}
-            {%- for option in sort_options -%}
-              <li>
-                <a
-                  href="{{ collection.url }}?sort_by={{ option.value }}"
-                  class="collection-sidebar__link{% if collection.sort_by == option.value %} is-active{% endif %}"
-                  {% if collection.sort_by == option.value %}aria-current="true"{% endif %}
-                >
-                  {{ option.name }}
-                </a>
-              </li>
-            {%- endfor -%}
-          </ul>
+      {%- comment %} Filter sidebar panel {%- endcomment %}
+      <aside class="panel collection-sidebar-panel" id="collection-sidebar" aria-label="Filters">
+        <div class="panel__header">
+          <span class="panel__header-title">FILTER</span>
         </div>
 
-        <div class="collection-sidebar__section">
-          <p class="collection-sidebar__heading">GENRE</p>
-          <ul class="collection-sidebar__list" role="list">
-            <li>
-              <a
-                href="{{ routes.collections_url }}/music"
-                class="collection-sidebar__link{% if collection.handle == 'music' %} is-active{% endif %}"
-                {% if collection.handle == 'music' %}aria-current="page"{% endif %}
-              >
-                All Music
-              </a>
-            </li>
-            {%- for c in collections -%}
-              {%- if c.metafields.custom.type == 'genre' -%}
+        <div class="panel__body collection-sidebar__body">
+
+          {%- comment %} Sort By {%- endcomment %}
+          <div class="filter-group" id="filter-group-sort">
+            <button
+              class="filter-group__heading"
+              aria-expanded="true"
+              aria-controls="filter-sort-options"
+            >
+              <span>Sort By</span>
+              <span class="filter-group__chevron" aria-hidden="true">›</span>
+            </button>
+            <ul id="filter-sort-options" class="filter-group__options" role="list">
+              {%- assign sort_map = 'title-ascending|Artist A-Z,title-descending|Artist Z-A,created-descending|Release Date ↓,created-ascending|Release Date ↑' | split: ',' -%}
+              {%- for entry in sort_map -%}
+                {%- assign parts = entry | split: '|' -%}
+                {%- assign sort_val = parts[0] -%}
+                {%- assign sort_label = parts[1] -%}
                 <li>
                   <a
-                    href="{{ c.url }}"
-                    class="collection-sidebar__link{% if collection.handle == c.handle %} is-active{% endif %}"
-                    {% if collection.handle == c.handle %}aria-current="page"{% endif %}
+                    href="{{ collection.url }}?sort_by={{ sort_val }}"
+                    class="filter-option{% if current_sort == sort_val %} filter-option--active{% endif %}"
+                    {% if current_sort == sort_val %}aria-current="true"{% endif %}
                   >
-                    {{ c.title }}
+                    {{ sort_label }}
                   </a>
                 </li>
-              {%- endif -%}
-            {%- endfor -%}
-          </ul>
+              {%- endfor -%}
+            </ul>
+          </div>
+
+          {%- comment %} Item Type (Shopify native storefront filter if enabled) {%- endcomment %}
+          {%- for filter in collection.filters -%}
+            {%- if filter.type == 'list' -%}
+              <div class="filter-group" id="filter-group-{{ filter.param_name | handleize }}">
+                <button
+                  class="filter-group__heading"
+                  aria-expanded="false"
+                  aria-controls="filter-options-{{ filter.param_name | handleize }}"
+                >
+                  <span>{{ filter.label }}</span>
+                  <span class="filter-group__chevron" aria-hidden="true">›</span>
+                </button>
+                <ul id="filter-options-{{ filter.param_name | handleize }}" class="filter-group__options" hidden role="list">
+                  {%- for value in filter.values -%}
+                    <li>
+                      <a
+                        href="{{ value.url_to_add }}"
+                        class="filter-option{% if value.active %} filter-option--active{% endif %}"
+                        {% if value.active %}aria-current="true"{% endif %}
+                      >
+                        {{ value.label }}
+                        {%- if value.count > 0 -%}
+                          <span class="filter-option__count">({{ value.count }})</span>
+                        {%- endif -%}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- comment %} Artists (navigation links) {%- endcomment %}
+          {%- assign artist_collections = collections | where: 'metafields.custom.type', 'artist' -%}
+          {%- if artist_collections.size > 0 -%}
+            <div class="filter-group" id="filter-group-artists">
+              <button
+                class="filter-group__heading"
+                aria-expanded="false"
+                aria-controls="filter-artist-options"
+              >
+                <span>Artists</span>
+                <span class="filter-group__chevron" aria-hidden="true">›</span>
+              </button>
+              <ul id="filter-artist-options" class="filter-group__options" hidden role="list">
+                {%- assign shown = 0 -%}
+                {%- for c in collections -%}
+                  {%- if c.metafields.custom.type == 'artist' and shown < 5 -%}
+                    <li>
+                      <a href="{{ c.url }}" class="filter-option">{{ c.title }}</a>
+                    </li>
+                    {%- assign shown = shown | plus: 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                <li>
+                  <a href="{{ routes.collections_url }}/artists" class="filter-option filter-option--more">more...</a>
+                </li>
+              </ul>
+            </div>
+          {%- endif -%}
+
+          {%- comment %} Genres (navigation links) {%- endcomment %}
+          <div class="filter-group" id="filter-group-genres">
+            <button
+              class="filter-group__heading"
+              aria-expanded="false"
+              aria-controls="filter-genre-options"
+            >
+              <span>Genres</span>
+              <span class="filter-group__chevron" aria-hidden="true">›</span>
+            </button>
+            <ul id="filter-genre-options" class="filter-group__options" hidden role="list">
+              <li>
+                <a
+                  href="{{ routes.collections_url }}/music"
+                  class="filter-option{% if collection.handle == 'music' %} filter-option--active{% endif %}"
+                >All</a>
+              </li>
+              {%- for c in collections -%}
+                {%- if c.metafields.custom.type == 'genre' -%}
+                  <li>
+                    <a
+                      href="{{ c.url }}"
+                      class="filter-option{% if collection.handle == c.handle %} filter-option--active{% endif %}"
+                      {% if collection.handle == c.handle %}aria-current="page"{% endif %}
+                    >{{ c.title }}</a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+
         </div>
       </aside>
 
-      {%- comment %} Product grid {%- endcomment %}
-      <div class="collection-grid">
-        {%- paginate collection.products by section.settings.products_per_page -%}
-          {%- if collection.products_count == 0 -%}
-            <p class="collection-grid__empty">No products found in this collection.</p>
-          {%- else -%}
-            <div class="collection-grid__products">
-              {%- for product in collection.products -%}
-                {%- render 'product-card', product: product -%}
-              {%- endfor -%}
-            </div>
+      {%- comment %} Collection main panel {%- endcomment %}
+      <div class="panel collection-main-panel">
+        <div class="panel__header">
+          <span class="panel__header-title">{{ collection.title | upcase }}</span>
+        </div>
+        <div class="panel__body">
+          {%- paginate collection.products by section.settings.products_per_page -%}
+            {%- if collection.products_count == 0 -%}
+              <p class="collection-empty">No products found in this collection.</p>
+            {%- else -%}
+              <div class="collection-grid">
+                {%- for product in collection.products -%}
+                  {%- render 'product-card', product: product -%}
+                {%- endfor -%}
+              </div>
 
-            {%- if paginate.pages > 1 -%}
-              <nav class="collection-pagination" aria-label="Pagination">
-                {%- if paginate.previous -%}
-                  <a href="{{ paginate.previous.url }}" class="pagination-btn" rel="prev">← Prev</a>
-                {%- endif -%}
+              {%- if paginate.pages > 1 -%}
+                <nav class="collection-pagination" aria-label="Pagination">
+                  <span class="collection-pagination__inner">
+                    {%- if paginate.previous -%}
+                      <a href="{{ paginate.previous.url }}" class="page-link" rel="prev" aria-label="Previous page">&lt;</a>
+                    {%- else -%}
+                      <span class="page-link page-link--disabled" aria-hidden="true">&lt;</span>
+                    {%- endif -%}
 
-                <span class="pagination-info">
-                  Page {{ paginate.current_page }} of {{ paginate.pages }}
-                </span>
+                    {%- for part in paginate.parts -%}
+                      {%- if part.is_link -%}
+                        <a href="{{ part.url }}" class="page-link" aria-label="Page {{ part.title }}">{{ part.title }}</a>
+                      {%- elsif part.title == paginate.current_page -%}
+                        <span class="page-link page-link--current" aria-current="page">{{ part.title }}</span>
+                      {%- else -%}
+                        <span class="page-link page-link--gap">{{ part.title }}</span>
+                      {%- endif -%}
+                    {%- endfor -%}
 
-                {%- if paginate.next -%}
-                  <a href="{{ paginate.next.url }}" class="pagination-btn" rel="next">Next →</a>
-                {%- endif -%}
-              </nav>
+                    {%- if paginate.next -%}
+                      <a href="{{ paginate.next.url }}" class="page-link" rel="next" aria-label="Next page">&gt;</a>
+                    {%- else -%}
+                      <span class="page-link page-link--disabled" aria-hidden="true">&gt;</span>
+                    {%- endif -%}
+                  </span>
+                </nav>
+              {%- endif -%}
             {%- endif -%}
-          {%- endif -%}
-        {%- endpaginate -%}
+          {%- endpaginate -%}
+        </div>
       </div>
 
     </div>
@@ -98,149 +197,223 @@
 </div>
 
 {% stylesheet %}
-  .collection-page__body {
-    background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
-  }
-
-  .collection-page__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
+  /* Two-panel layout: filter sidebar | main */
+  .collection-page__layout {
     display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 2rem;
+    grid-template-columns: 320px 1fr;
+    gap: 1rem;
     align-items: start;
   }
 
-  /* Sidebar */
-  .collection-sidebar {
+  /* Sidebar panel: override panel__body padding so filter groups go edge-to-edge */
+  .collection-sidebar-panel {
     position: sticky;
-    top: calc(var(--header-total-height) + 1.5rem);
+    top: var(--header-total-height);
+    max-height: calc(100vh - var(--header-total-height));
+    overflow-y: auto;
   }
 
-  .collection-sidebar__section {
-    margin-bottom: 2rem;
+  .collection-sidebar-panel .panel__body {
+    padding: 0.5rem 0;
   }
 
-  .collection-sidebar__heading {
-    font-family: var(--font-pixel);
-    font-size: 0.625rem;
-    color: var(--color-black);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
+  /* Filter groups */
+  .filter-group {
+    border-bottom: 1px solid #ccc;
   }
 
-  .collection-sidebar__list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  .filter-group__heading {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.625rem 1.375rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--color-black);
+    text-align: left;
   }
 
-  .collection-sidebar__link {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
+  .filter-group__heading:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: -2px;
+  }
+
+  .filter-group__chevron {
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: transform 0.15s ease;
+    display: inline-block;
+  }
+
+  .filter-group__heading[aria-expanded="true"] .filter-group__chevron {
+    transform: rotate(90deg);
+  }
+
+  .filter-group__options {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0.75rem;
+  }
+
+  .filter-group__options[hidden] {
+    display: none;
+  }
+
+  .filter-option {
+    display: block;
+    padding: 0.375rem 1.375rem 0.375rem 3rem;
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
     font-weight: 400;
     color: var(--color-black);
     text-decoration: none;
-    display: block;
-    padding: 0.25rem 0;
   }
 
-  .collection-sidebar__link:hover {
-    text-decoration: underline;
-  }
-
-  .collection-sidebar__link.is-active {
-    font-weight: 700;
-    color: var(--color-blue);
-  }
-
-  .collection-sidebar__link:focus-visible {
-    outline: 2px solid var(--color-blue);
-    outline-offset: 2px;
-  }
-
-  /* Product grid */
-  .collection-grid__products {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
-    gap: 1.5rem;
-  }
-
-  .collection-grid__empty {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: #666;
-    grid-column: 1 / -1;
-  }
-
-  /* Pagination */
-  .collection-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    padding: 2rem 0 0;
-  }
-
-  .pagination-btn {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-black);
-    text-decoration: none;
-    border: 2px solid var(--color-black);
-    padding: 0.5rem 1rem;
-  }
-
-  .pagination-btn:hover {
+  .filter-option--active {
     background: var(--color-black);
     color: var(--color-white);
   }
 
-  .pagination-btn:focus-visible {
+  .filter-option:hover:not(.filter-option--active) {
+    background: #eee;
+  }
+
+  .filter-option:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: -2px;
+  }
+
+  .filter-option__count {
+    font-size: 0.875em;
+    opacity: 0.7;
+    margin-left: 0.25rem;
+  }
+
+  .filter-option--more {
+    font-style: italic;
+  }
+
+  /* Product grid */
+  .collection-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 1vw;
+    row-gap: 1vh;
+  }
+
+  .collection-empty {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  /* Pagination */
+  .collection-pagination {
+    padding: 2.5rem 0 1rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .collection-pagination__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+
+  .page-link {
+    color: var(--color-black);
+    text-decoration: none;
+    padding: 0.125rem 0.25rem;
+  }
+
+  .page-link:hover {
+    text-decoration: underline;
+  }
+
+  .page-link:focus-visible {
     outline: 2px solid var(--color-blue);
     outline-offset: 2px;
   }
 
-  .pagination-info {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
+  .page-link--current {
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .page-link--disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .page-link--gap {
+    cursor: default;
   }
 
   /* Mobile */
-  @media screen and (max-width: 768px) {
-    .collection-page__body {
-      padding: 1.5rem 1rem;
+  @media screen and (max-width: 1024px) {
+    .collection-page__layout {
+      grid-template-columns: 260px 1fr;
     }
 
-    .collection-page__inner {
+    .filter-group__heading {
+      font-size: 1.25rem;
+    }
+
+    .filter-option {
+      font-size: 1rem;
+    }
+
+    .collection-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .collection-page__layout {
       grid-template-columns: 1fr;
     }
 
-    .collection-sidebar {
+    .collection-sidebar-panel {
       position: static;
+      max-height: none;
     }
 
-    .collection-sidebar__section {
-      margin-bottom: 1rem;
+    .collection-grid {
+      grid-template-columns: repeat(3, 1fr);
     }
 
-    .collection-sidebar__list {
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
+    .collection-pagination__inner {
+      font-size: 1rem;
     }
+  }
 
-    .collection-grid__products {
-      grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
-      gap: 1rem;
+  @media screen and (max-width: 480px) {
+    .collection-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  // Collapsible filter groups
+  document.querySelectorAll('.filter-group__heading').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expanded = this.getAttribute('aria-expanded') === 'true';
+      var targetId = this.getAttribute('aria-controls');
+      var target = document.getElementById(targetId);
+      this.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      if (target) target.hidden = expanded;
+    });
+  });
+{% endjavascript %}
 
 {% schema %}
 {
@@ -253,7 +426,7 @@
       "min": 12,
       "max": 48,
       "step": 4,
-      "default": 24
+      "default": 16
     }
   ],
   "presets": [
