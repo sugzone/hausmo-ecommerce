@@ -205,6 +205,7 @@ document.querySelectorAll('[data-product-form]').forEach(form => {
       const errorEl = form.querySelector('[data-cart-error]');
       if (errorEl) errorEl.hidden = true;
 
+      announce('Added to cart.');
       openCartDrawer();
     } catch (err) {
       console.error('Add to cart failed', err);
@@ -217,26 +218,41 @@ document.querySelectorAll('[data-product-form]').forEach(form => {
   });
 });
 
+/* ─── Accessible announcer ────────────────────────────────────
+ * Politely announces dynamic changes to screen readers via the
+ * aria-live region in layout/theme.liquid.
+ */
+function announce(message) {
+  const announcer = document.getElementById('a11y-announcer');
+  if (!announcer) return;
+  // Clear first so repeated identical messages still fire
+  announcer.textContent = '';
+  requestAnimationFrame(() => { announcer.textContent = message; });
+}
+
 /* ─── Search dropdown ─────────────────────────────────────────
+ * Uses native <dialog> with .show() (non-modal) so it doesn't
+ * trap focus or add a backdrop.
  * Predictive Search API returns prices as decimal dollar strings.
  */
 const searchDropdown = document.getElementById('search-dropdown');
 const searchBtns     = document.querySelectorAll('.header__search-btn');
 const searchInput    = document.getElementById('search-input');
 const searchResults  = document.getElementById('search-results');
+const searchStatus   = document.getElementById('search-status');
 
 let searchTimeout;
 
 function openSearch() {
   if (!searchDropdown) return;
-  searchDropdown.removeAttribute('hidden');
+  searchDropdown.show();
   searchBtns.forEach(btn => btn.setAttribute('aria-expanded', 'true'));
   searchInput?.focus();
 }
 
 function closeSearch() {
   if (!searchDropdown) return;
-  searchDropdown.setAttribute('hidden', '');
+  searchDropdown.close();
   searchBtns.forEach(btn => btn.setAttribute('aria-expanded', 'false'));
 }
 
@@ -249,21 +265,21 @@ searchBtns.forEach(btn => {
 
 // Close on outside click
 document.addEventListener('click', (e) => {
-  if (!searchDropdown) return;
+  if (!searchDropdown?.open) return;
   const clickedOutside =
     !searchDropdown.contains(e.target) &&
     ![...searchBtns].some(btn => btn.contains(e.target));
   if (clickedOutside) closeSearch();
 });
 
-// Esc closes both drawer and search
+// Esc closes search (non-modal dialog doesn't handle Esc automatically)
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  if (searchDropdown && !searchDropdown.hasAttribute('hidden')) {
+  if (searchDropdown?.open) {
     closeSearch();
     searchBtns[0]?.focus();
   }
-  // <dialog> natively handles Esc, but we clean up our state
+  // <dialog> natively handles Esc for modal (showModal), but we clean up state
   if (cartDrawer?.open) closeCartDrawer();
 });
 
@@ -272,7 +288,7 @@ searchInput?.addEventListener('input', () => {
   const query = searchInput.value.trim();
   if (query.length < 2) {
     if (searchResults) searchResults.innerHTML = '';
-    searchInput.setAttribute('aria-expanded', 'false');
+    if (searchStatus) searchStatus.textContent = '';
     return;
   }
   searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
@@ -296,11 +312,11 @@ async function fetchSuggestions(query) {
 
 function renderSuggestions(products) {
   if (!searchResults) return;
-  searchInput.setAttribute('aria-expanded', 'true');
 
   if (products.length === 0) {
     searchResults.innerHTML =
-      '<li class="search-result search-result--empty" role="option">No results found</li>';
+      '<li class="search-result search-result--empty">No results found</li>';
+    if (searchStatus) searchStatus.textContent = 'No results found.';
     return;
   }
 
@@ -310,7 +326,7 @@ function renderSuggestions(products) {
     // price is a decimal dollar amount from predictive search
     const price = p.price != null ? formatMoneyFromDecimal(p.price) : '';
     return `
-      <li class="search-result" role="option">
+      <li class="search-result">
         <a href="${p.url}" class="search-result__link">
           ${imgUrl
             ? `<img src="${imgUrl}" alt="" width="48" height="48" class="search-result__image" loading="lazy">`
@@ -321,6 +337,10 @@ function renderSuggestions(products) {
       </li>
     `;
   }).join('');
+
+  if (searchStatus) {
+    searchStatus.textContent = `${products.length} result${products.length !== 1 ? 's' : ''} found.`;
+  }
 }
 
 /* ─── Genre button font scaling ───────────────────────────────

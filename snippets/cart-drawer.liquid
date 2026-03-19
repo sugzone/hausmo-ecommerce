@@ -22,6 +22,7 @@
       <form action="{{ routes.cart_url }}/checkout" method="post">
         <button type="submit" class="cart-drawer__checkout">Checkout</button>
       </form>
+      <a href="{{ routes.cart_url }}" class="cart-drawer__view-cart">View Cart</a>
       <button type="button" class="cart-drawer__continue" aria-label="Close cart and continue shopping">Continue Shopping</button>
     </div>
   </div>
@@ -231,6 +232,25 @@
   }
 
   .cart-drawer__checkout:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .cart-drawer__view-cart {
+    display: block;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--color-black);
+    text-decoration: underline;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cart-drawer__view-cart:focus-visible {
     outline: 2px solid var(--color-blue);
     outline-offset: 2px;
   }

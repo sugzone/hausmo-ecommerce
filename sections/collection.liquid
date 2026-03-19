@@ -147,7 +147,7 @@
       {%- comment %} Collection main panel {%- endcomment %}
       <div class="panel collection-main-panel">
         <div class="panel__header">
-          <span class="panel__header-title">{{ collection.title | upcase }}</span>
+          <h1 class="panel__header-title">{{ collection.title | upcase }}</h1>
         </div>
         <div class="panel__body">
           {%- paginate collection.products by section.settings.products_per_page -%}
@@ -349,7 +349,7 @@
   }
 
   .page-link--disabled {
-    opacity: 0.35;
+    color: #767676;
     cursor: default;
   }
 

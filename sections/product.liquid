@@ -28,12 +28,13 @@
 {%- assign complementary = product.metafields['shopify--discovery--product_recommendation']['complementary_products'] -%}
 {%- assign related = product.metafields['shopify--discovery--product_recommendation']['related_products'] -%}
 
-<div class="product-page">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">{{ release_name | upcase }}</span>
-  </div>
-
-  <div class="product-page__body full-width">
+<div class="product-page full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <h1 class="panel__header-title">{{ release_name | upcase }}</h1>
+      </div>
+      <div class="panel__body">
     <div class="product-page__inner">
 
       {%- comment %} Left: image gallery {%- endcomment %}
@@ -62,7 +63,6 @@
                 data-image-src="{{ image | image_url: width: 800, height: 800, crop: 'center' }}"
                 data-image-alt="{{ image.alt | default: product.title | escape }}"
                 aria-label="View image {{ forloop.index }}"
-                role="listitem"
                 type="button"
               >
                 {{
@@ -87,14 +87,35 @@
           </p>
         {%- endif -%}
 
-        <h1 class="product-info__title">{{ release_name }}</h1>
+        <h2 class="product-info__title">{{ release_name }}</h2>
+
+
 
         {%- if catalog_number != blank -%}
           <p class="product-info__catalog">HAUSMO{{ catalog_number }}</p>
         {%- endif -%}
 
         {%- if release_date != blank -%}
-          <p class="product-info__date">{{ release_date }}</p>
+          <p class="product-info__date">{{ release_date | date: "%B %d, %Y" }}</p>
+        {%- endif -%}
+
+        {%- comment %} Genres: links to each genre collection this product belongs to {%- endcomment %}
+        {%- assign genre_count = 0 -%}
+        {%- for c in product.collections -%}
+          {%- if c.metafields.custom.type == 'genre' -%}
+            {%- assign genre_count = genre_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if genre_count > 0 -%}
+          <p class="product-info__genres">
+            {%- assign genre_shown = 0 -%}
+            {%- for c in product.collections -%}
+              {%- if c.metafields.custom.type == 'genre' -%}
+                {%- assign genre_shown = genre_shown | plus: 1 -%}
+                <a href="{{ c.url }}" class="product-info__genre-link">{{ c.title }}</a>{%- unless genre_shown == genre_count %}, {%- endunless -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </p>
         {%- endif -%}
 
         {%- if physical_info != blank -%}
@@ -136,12 +157,14 @@
                       {% unless variant.available %}disabled{% endunless %}
                       class="variant-option__input sr-only"
                     >
-                    <span class="variant-option__label">{{ variant.title }}</span>
+                    <span class="variant-option__label">{{ variant.title }} - {{ variant.price | money }}</span>
                   </label>
                 {%- endfor -%}
               </div>
             </fieldset>
           {%- endif -%}
+
+          <p class="product-form__error" data-cart-error aria-live="assertive" hidden></p>
 
           <div class="product-form__actions">
             {%- if current_variant.available -%}
@@ -167,21 +190,19 @@
 
     {%- comment %} Related products {%- endcomment %}
     {%- if related != blank -%}
-      <div class="product-complementary full-width">
-        <div class="section-header-bar full-width">
-          <span class="section-header-bar__title">Merch</span>
-        </div>
-        <div class="product-complementary__inner">
+      <div class="product-complementary product-complementary--related">
+        <h2 class="product-complementary__heading">Merch</h2>
+        <ul class="product-complementary__inner">
           {%- for rec_product in related.value limit: 6 -%}
-            {%- render 'product-card', product: rec_product -%}
+            <li class="product-complementary__item">{%- render 'product-card', product: rec_product -%}</li>
           {%- endfor -%}
-        </div>
+        </ul>
       </div>
     {%- endif -%}
 
     {%- comment %} Below-fold: description, tracklist, physical info {%- endcomment %}
     {%- if product.description != blank or tracklist != blank or physical_info != blank -%}
-      <div class="product-details full-width">
+      <div class="product-details">
         <div class="product-details__inner">
 
           {%- if product.description != blank -%}
@@ -193,7 +214,7 @@
 
           {%- if tracklist != blank -%}
             <div class="product-details__section">
-              <h2 class="product-details__heading">Tracklist</h2>
+              <h3 class="product-details__heading">Tracklist</h3>
               <div class="product-details__body product-tracklist">{{ tracklist | newline_to_br }}</div>
             </div>
           {%- endif -%}
@@ -204,34 +225,32 @@
 
     {%- comment %} Complementary products {%- endcomment %}
     {%- if complementary != blank -%}
-      <div class="product-complementary full-width">
-        <div class="section-header-bar full-width">
-          <span class="section-header-bar__title">Recommended music</span>
-        </div>
-        <div class="product-complementary__inner">
+      <div class="product-complementary product-complementary--complementary">
+        <h2 class="product-complementary__heading">Recommended music</h2>
+        <ul class="product-complementary__inner">
           {%- for rec_product in complementary.value limit: 6 -%}
-            {%- render 'product-card', product: rec_product -%}
+            <li class="product-complementary__item">{%- render 'product-card', product: rec_product -%}</li>
           {%- endfor -%}
-        </div>
+        </ul>
       </div>
     {%- endif -%}
 
-  </div>
-</div>
+      </div>{%- comment %} panel__body {%- endcomment %}
+    </div>{%- comment %} panel {%- endcomment %}
+  </div>{%- comment %} panel-page {%- endcomment %}
+</div>{%- comment %} product-page {%- endcomment %}
 
 {% stylesheet %}
-  .product-page__body {
+  .product-page {
     background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
   }
 
   .product-page__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: start;
+    margin-bottom: 2rem;
   }
 
   /* Gallery */
@@ -298,15 +317,15 @@
 
   .product-info__artist {
     font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 3rem;
+    line-height: 1.1;
+    margin: 0;
   }
 
   .product-info__artist-link {
-    color: var(--color-blue);
+    color: var(--color-black);
     text-decoration: none;
+    font-style: italic;
   }
 
   .product-info__artist-link:hover {
@@ -314,9 +333,9 @@
   }
 
   .product-info__title {
-    font-family: var(--font-pixel-sans);
+    font-family: var(--font-sans);
     font-weight: 700;
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-size: 3rem;
     line-height: 1.1;
     color: var(--color-black);
     margin: 0;
@@ -324,15 +343,27 @@
 
   .product-info__catalog {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 1.5rem;
     font-weight: 400;
-    color: #555;
+    color: var(--color-black);
   }
 
   .product-info__date {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: #555;
+    font-size: 1.5rem;
+    color: var(--color-black);
+  }
+
+  .product-info__genres {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    color: var(--color-black);
+  }
+
+  .product-info__genre-link {
+    font-style: italic;
+    text-decoration: underline;
+    color: var(--color-black);
   }
 
   .product-info__price {
@@ -362,6 +393,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    justify-content: space-between;
   }
 
   .variant-option {
@@ -371,10 +403,11 @@
   .variant-option__label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 1.5rem;
     font-weight: 700;
     padding: 0.4rem 0.875rem;
     border: 2px solid var(--color-black);
+    border-radius: 10px;
     cursor: pointer;
     user-select: none;
     transition: background 0.1s, color 0.1s;
@@ -407,10 +440,11 @@
     padding: 0.875rem 1.5rem;
     background: var(--color-red);
     color: var(--color-white);
-    font-family: var(--font-pixel);
-    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
     font-weight: 400;
     border: none;
+    border-radius: 50px;
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -426,8 +460,15 @@
   }
 
   .btn-add-to-cart--sold-out {
-    background: #888;
+    background: #666;
     cursor: not-allowed;
+  }
+
+  .product-form__error {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-red);
+    margin: 0.5rem 0 0;
   }
 
   /* Bandcamp embed */
@@ -442,15 +483,14 @@
 
   /* Below-fold details */
   .product-details {
-    background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
+    border-top: 1px solid #ddd;
+    padding-top: 2rem;
+    margin-top: 2rem;
   }
 
   .product-details__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+    grid-template-columns: 3fr 1fr;
     gap: 2.5rem;
   }
 
@@ -464,7 +504,7 @@
 
   .product-details__body {
     font-family: var(--font-mono);
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.6;
     color: var(--color-black);
   }
@@ -473,35 +513,108 @@
     white-space: pre-line;
   }
 
-  /* Complementary products */
+  .product-tracklist li {
+    line-height: 1.6;
+  }
+
+  /* Complementary / related products */
+  .product-complementary__heading {
+    font-family: var(--font-pixel);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-black);
+    margin: 2rem 0 1rem;
+  }
+
   .product-complementary__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, 160px);
     gap: 1.5rem;
-    padding: 2rem var(--page-margin);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .product-complementary__item {
+    list-style: none;
+  }
+
+  /* Fixed 160px square images in both complementary sections */
+  .product-complementary__inner .product-card__image {
+    width: 160px;
+    height: 160px;
+    aspect-ratio: auto;
+  }
+
+  /* Both sections: Quantico 24px, underlined text */
+  .product-complementary__inner .product-card__title,
+  .product-complementary__inner .product-card__artist {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    text-decoration: underline;
+  }
+
+  /* Related (Merch): title not bold */
+  .product-complementary--related .product-card__title {
+    font-weight: 400;
+  }
+
+  /* Complementary (Recommended music): title bold, artist not bold */
+  .product-complementary--complementary .product-card__title {
+    font-weight: 700;
+  }
+  .product-complementary--complementary .product-card__artist {
+    font-weight: 400;
   }
 
   /* Mobile */
   @media screen and (max-width: 768px) {
-    .product-page__body {
-      padding: 1.5rem 1rem;
-    }
-
     .product-page__inner {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
 
-    .product-details {
-      padding: 1.5rem 1rem;
+    .product-info__title,
+    .product-info__artist {
+      font-size: 1.5rem;
+    }
+
+    .product-info__catalog,
+    .product-info__date,
+    .product-info__genres,
+    .product-info__price {
+      font-size: 0.75rem;
+    }
+
+    .variant-option__label {
+      font-size: 0.75rem;
+    }
+
+    .btn-add-to-cart {
+      font-size: 0.75rem;
+    }
+
+    .product-details__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .product-details__body {
+      font-size: 0.75rem;
     }
 
     .product-complementary__inner {
-      padding: 1.5rem 1rem;
-      grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+      grid-template-columns: repeat(auto-fill, 80px);
       gap: 1rem;
+    }
+
+    .product-complementary__inner .product-card__image {
+      width: 80px;
+      height: 80px;
+    }
+
+    .product-complementary__inner .product-card__title,
+    .product-complementary__inner .product-card__artist {
+      font-size: 0.75rem;
     }
   }
 {% endstylesheet %}
@@ -533,8 +646,8 @@
       }
 
       var submitBtn = document.getElementById('product-submit');
+      var available = this.dataset.available === 'true';
       if (submitBtn) {
-        var available = this.dataset.available === 'true';
         submitBtn.disabled = !available;
         submitBtn.textContent = available ? 'Add to Cart' : 'Sold Out';
         if (available) {
@@ -542,6 +655,14 @@
         } else {
           submitBtn.classList.add('btn-add-to-cart--sold-out');
         }
+      }
+
+      // Announce updated price and availability to screen readers
+      if (typeof announce === 'function') {
+        var priceEl = document.getElementById('product-price');
+        var priceText = priceEl ? priceEl.textContent.trim() : '';
+        var availText = available ? 'In stock' : 'Sold out';
+        announce(priceText + ', ' + availText);
       }
     });
   });

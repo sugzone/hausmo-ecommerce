@@ -1,9 +1,7 @@
-<div
+<dialog
   id="search-dropdown"
   class="search-dropdown"
-  role="dialog"
   aria-label="Search"
-  hidden
 >
   <form
     action="{{ routes.search_url }}"
@@ -20,33 +18,45 @@
       class="search-dropdown__input"
       placeholder="Search..."
       autocomplete="off"
-      aria-autocomplete="list"
       aria-controls="search-results"
-      aria-expanded="false"
     >
     <button type="submit" class="search-dropdown__submit" aria-label="Submit search">
       {{ 'search.svg' | inline_asset_content }}
     </button>
   </form>
 
+  <p id="search-status" class="sr-only" aria-live="polite"></p>
+
   <ul
     id="search-results"
     class="search-dropdown__results"
-    role="listbox"
+    role="list"
     aria-label="Search suggestions"
   ></ul>
-</div>
+</dialog>
 
 {% stylesheet %}
   .search-dropdown {
+    /* Reset native <dialog> UA styles */
+    border: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+    max-height: none;
+    /* Positioning */
     position: fixed;
     top: var(--header-total-height);
     left: 0;
     right: 0;
+    width: 100%;
     z-index: 200;
     background: var(--color-white);
     border-bottom: 2px solid var(--color-black);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .search-dropdown:not([open]) {
+    display: none;
   }
 
   .search-dropdown__form {
@@ -68,7 +78,7 @@
     outline: none;
   }
 
-  .search-dropdown__input:focus {
+  .search-dropdown__input:focus-visible {
     border-bottom-color: var(--color-blue);
   }
 
@@ -83,6 +93,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .search-dropdown__submit:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
   }
 
   .search-dropdown__submit svg {
@@ -120,8 +135,9 @@
   }
 
   .search-result__link:hover,
-  .search-result__link:focus {
+  .search-result__link:focus-visible {
     background: var(--color-section-bg);
+    outline: none;
   }
 
   .search-result__image {
