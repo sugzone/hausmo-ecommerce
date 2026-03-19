@@ -56,28 +56,33 @@
         </div>
 
         {%- if product.images.size > 1 -%}
-          <div class="product-gallery__thumbs" role="list" aria-label="Product images">
+          <ul class="product-gallery__thumbs" aria-label="Product images">
             {%- for image in product.images limit: 8 -%}
-              <button
-                class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
-                data-image-src="{{ image | image_url: width: 800, height: 800, crop: 'center' }}"
-                data-image-alt="{{ image.alt | default: product.title | escape }}"
-                aria-label="View image {{ forloop.index }}"
-                type="button"
-              >
-                {{
-                  image
-                  | image_url: width: 120, height: 120, crop: 'center'
-                  | image_tag: loading: 'lazy', class: 'product-gallery__thumb-image', alt: ''
-                }}
-              </button>
+              <li>
+                <button
+                  class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
+                  data-image-src="{{ image | image_url: width: 800, height: 800, crop: 'center' }}"
+                  data-image-alt="{{ image.alt | default: product.title | escape }}"
+                  aria-label="View image {{ forloop.index }}"
+                  type="button"
+                >
+                  {{
+                    image
+                    | image_url: width: 120, height: 120, crop: 'center'
+                    | image_tag: loading: 'lazy', class: 'product-gallery__thumb-image', alt: ''
+                  }}
+                </button>
+              </li>
             {%- endfor -%}
-          </div>
+          </ul>
         {%- endif -%}
       </div>
 
       {%- comment %} Right: product info + form {%- endcomment %}
       <div class="product-info">
+
+        <h2 class="product-info__title" aria-hidden="true">{{ release_name }}</h2>
+
 
         {%- if artist != blank -%}
           <p class="product-info__artist">
@@ -87,7 +92,6 @@
           </p>
         {%- endif -%}
 
-        <h2 class="product-info__title">{{ release_name }}</h2>
 
 
 
@@ -128,8 +132,12 @@
           {% capture bandcamp_iframe_link %}
             https://bandcamp.com/EmbeddedPlayer/album={{ product.metafields.custom.bandcamp_album_id }}/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=false/artwork=small/transparent=true/
           {% endcapture %}
-            <div class="product-bandcamp" aria-label="Listen on Bandcamp">
-              <iframe style="border: 0; width: 100%; height: 120px;" src="{{ bandcamp_iframe_link | strip }}"></iframe>
+            <div class="product-bandcamp">
+              <iframe
+                title="Bandcamp player for {{ product.title | escape }}"
+                style="border: 0; width: 100%; height: 120px;"
+                src="{{ bandcamp_iframe_link | strip }}"
+              ></iframe>
             </div>
         {%- endif -%}
 
@@ -177,7 +185,7 @@
                 Add to Cart
               </button>
             {%- else -%}
-              <button type="button" class="btn-add-to-cart btn-add-to-cart--sold-out" disabled aria-disabled="true">
+              <button type="button" class="btn-add-to-cart btn-add-to-cart--sold-out" disabled>
                 Sold Out
               </button>
             {%- endif -%}
@@ -278,6 +286,13 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .product-gallery__thumbs li {
+    display: contents;
   }
 
   .product-gallery__thumb {
@@ -424,7 +439,8 @@
   }
 
   .variant-option--unavailable .variant-option__label {
-    opacity: 0.4;
+    color: #767676;
+    border-color: #767676;
     text-decoration: line-through;
     cursor: not-allowed;
   }
@@ -441,7 +457,7 @@
     background: var(--color-red);
     color: var(--color-white);
     font-family: var(--font-mono);
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 400;
     border: none;
     border-radius: 50px;
@@ -481,11 +497,15 @@
     border: 0;
   }
 
+  /* Section spacing — consistent top margin for all product page sections */
+  .product-complementary,
+  .product-details {
+    margin-top: 3rem;
+  }
+
   /* Below-fold details */
   .product-details {
-    border-top: 1px solid #ddd;
-    padding-top: 2rem;
-    margin-top: 2rem;
+    padding-top: 0;
   }
 
   .product-details__inner {
@@ -514,7 +534,7 @@
   }
 
   .product-tracklist li {
-    line-height: 1.6;
+    line-height: 1.2;
   }
 
   /* Complementary / related products */
@@ -523,7 +543,7 @@
     font-size: 0.75rem;
     font-weight: 400;
     color: var(--color-black);
-    margin: 2rem 0 1rem;
+    margin: 0 0 1rem;
   }
 
   .product-complementary__inner {
@@ -588,10 +608,12 @@
 
     .variant-option__label {
       font-size: 0.75rem;
+      padding: 0.75rem 0.875rem;
     }
 
     .btn-add-to-cart {
       font-size: 0.75rem;
+      border-radius: 30px;
     }
 
     .product-details__inner {
@@ -631,6 +653,9 @@
         t.classList.remove('is-active');
       });
       this.classList.add('is-active');
+      if (typeof announce === 'function') {
+        announce(this.dataset.imageAlt || 'Image updated');
+      }
     });
   });
 
