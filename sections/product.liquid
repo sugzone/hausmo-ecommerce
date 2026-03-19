@@ -12,6 +12,7 @@
     custom.tracklist            — multi-line text
     custom.physical_object.info — physical format details
     shopify--discovery--product_recommendation.complementary_products — list.product_reference
+    shopify--discovery--product_recommendation.related_products — list.product_reference
 
   The add-to-cart form has data-product-form for JS interception in theme.js.
   Variant changes update price + availability via data attributes read by theme.js.
@@ -25,6 +26,7 @@
 {%- assign tracklist = product.metafields.custom.tracklist -%}
 {%- assign physical_info = product.metafields.custom['physical_object.info'] -%}
 {%- assign complementary = product.metafields['shopify--discovery--product_recommendation']['complementary_products'] -%}
+{%- assign related = product.metafields['shopify--discovery--product_recommendation']['related_products'] -%}
 
 <div class="product-page">
   <div class="section-header-bar full-width">
@@ -154,6 +156,20 @@
       </div>
     </div>
 
+    {%- comment %} Related products {%- endcomment %}
+    {%- if related != blank -%}
+      <div class="product-complementary full-width">
+        <div class="section-header-bar full-width">
+          <span class="section-header-bar__title">Merch</span>
+        </div>
+        <div class="product-complementary__inner">
+          {%- for rec_product in related.value limit: 6 -%}
+            {%- render 'product-card', product: rec_product -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
     {%- comment %} Below-fold: description, tracklist, physical info {%- endcomment %}
     {%- if product.description != blank or tracklist != blank or physical_info != blank -%}
       <div class="product-details full-width">
@@ -188,7 +204,7 @@
     {%- if complementary != blank -%}
       <div class="product-complementary full-width">
         <div class="section-header-bar full-width">
-          <span class="section-header-bar__title">YOU MIGHT ALSO LIKE</span>
+          <span class="section-header-bar__title">Recommended music</span>
         </div>
         <div class="product-complementary__inner">
           {%- for rec_product in complementary.value limit: 6 -%}
