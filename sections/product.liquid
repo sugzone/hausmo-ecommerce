@@ -8,7 +8,7 @@
     custom.release_name         — alternate release title (falls back to product.title)
     custom.catalog_number       — e.g. "HM-001"
     custom.release_date         — ISO date string
-    custom.bandcamp_embed       — raw HTML embed (metafield type: html)
+    custom.bandcamp_album_id       — raw HTML embed (metafield type: html)
     custom.tracklist            — multi-line text
     custom.physical_object.info — physical format details
     shopify--discovery--product_recommendation.complementary_products — list.product_reference
@@ -90,7 +90,7 @@
         <h1 class="product-info__title">{{ release_name }}</h1>
 
         {%- if catalog_number != blank -%}
-          <p class="product-info__catalog">{{ catalog_number }}</p>
+          <p class="product-info__catalog">HAUSMO{{ catalog_number }}</p>
         {%- endif -%}
 
         {%- if release_date != blank -%}
@@ -101,11 +101,14 @@
             <div class="product-details__section">
               <div class="product-details__body">{{ physical_info | newline_to_br }}</div>
             </div>
-          {%- endif -%}
+        {%- endif -%}
 
-        {%- if product.metafields.custom.bandcamp_embed != blank -%}
+        {%- if product.metafields.custom.bandcamp_album_id != blank -%}
+          {% capture bandcamp_iframe_link %}
+            https://bandcamp.com/EmbeddedPlayer/album={{ product.metafields.custom.bandcamp_album_id }}/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=false/artwork=small/transparent=true/
+          {% endcapture %}
             <div class="product-bandcamp" aria-label="Listen on Bandcamp">
-              {{ product.metafields.custom.bandcamp_embed }}
+              <iframe style="border: 0; width: 100%; height: 120px;" src="{{ bandcamp_iframe_link | strip }}"></iframe>
             </div>
         {%- endif -%}
 
