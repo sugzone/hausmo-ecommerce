@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+  <!-- T-shirt icon -->
+  <path
+    d="M10 4 L4 10 L8 12 L8 27 L24 27 L24 12 L28 10 L22 4 C22 4 20 7 16 7 C12 7 10 4 10 4Z"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>

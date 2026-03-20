@@ -1,20 +1,32 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "main": {
-      "type": "hello-world",
-      "settings": {}
+    "featured-releases": {
+      "type": "home-featured-releases",
+      "settings": {
+        "header_text": "Engage in Commerce!",
+        "tagline": "FRESH & HOT FROM THE BISCUIT FACTORY",
+        "product_count": 8
+      }
+    },
+    "featured-merch": {
+      "type": "home-featured-merch",
+      "settings": {
+        "header_text": "CLOTHING & HOT ITEMS!",
+        "tagline": "Garb Yourself In HausMo",
+        "product_count": 8
+      }
+    },
+    "genres": {
+      "type": "home-genres",
+      "settings": {
+        "header_text": "PERUSE THE HAUSMO CATALOG",
+        "tagline": "Select A Zone From Our Lavish Menu"
+      }
     }
   },
   "order": [
-    "main"
+    "featured-releases",
+    "featured-merch",
+    "genres"
   ]
 }

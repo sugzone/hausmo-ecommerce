@@ -1,83 +1,126 @@
 {% comment %}
-  This section is used in the list-collections template to render a list of
-  collections.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
+  Artists page: lists all collections where custom.type == 'artist'.
+  Each artist card shows their featured image and name, links to their collection.
 {% endcomment %}
 
-<h1>{{ 'collections.title' | t }}</h1>
-
-<div
-  class="collections {{ section.settings.grid_item_width }}"
-  style="--grid-gap: {{ section.settings.grid_gap }}px"
->
-  {% for collection in collections %}
-    <a class="collection-card" href="{{ collection.url }}">
-      {% if collection.featured_image %}
-        {% render 'image',
-          class: 'collection-card__image',
-          image: collection.featured_image,
-          width: 600,
-          height: 600,
-          crop: 'center'
-        %}
-      {% endif %}
-
-      <div class="collection-card__content">
-        <p>{{ collection.title }}</p>
-
-        {% if collection.description %}
-          <p>{{ collection.description | strip_html | truncatewords: 15 }}</p>
-        {% endif %}
+<div class="artists-page full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <h1 class="panel__header-title">ARTISTS</h1>
       </div>
-    </a>
-  {% endfor %}
+      <div class="panel__body">
+        <div class="artists-grid">
+          {%- assign has_artists = false -%}
+          {%- for c in collections -%}
+            {%- if c.metafields.custom.type == 'artist' -%}
+              {%- assign has_artists = true -%}
+              <a href="{{ c.url }}" class="artist-card">
+                <div class="artist-card__image-wrap">
+                  {%- if c.featured_image -%}
+                    {{
+                      c.featured_image
+                      | image_url: width: 400, height: 400, crop: 'center'
+                      | image_tag:
+                        loading: 'lazy',
+                        class: 'artist-card__image img-cover',
+                        alt: c.title
+                    }}
+                  {%- else -%}
+                    <div class="artist-card__image artist-card__image--placeholder" aria-hidden="true"></div>
+                  {%- endif -%}
+                </div>
+                <h2 class="artist-card__name">{{ c.title }}</h2>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- unless has_artists -%}
+            <p class="artists-grid__empty">No artists found.</p>
+          {%- endunless -%}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% stylesheet %}
-  .collections {
+  .artists-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(var(--collection-card-size), 100%), 1fr));
-    gap: var(--grid-gap);
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 1vw;
+    row-gap: 1vh;
   }
-  .collections--compact {
-    --collection-card-size: 160px;
+
+  .artists-grid__empty {
+    font-family: var(--font-mono);
+    font-size: var(--theme-font-size-small);
+    color: #666;
   }
-  .collections--full {
-    --collection-card-size: 280px;
-  }
-  .collection-card {
+
+  .artist-card {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--color-black);
+  }
+
+  .artist-card:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 4px;
+  }
+
+  .artist-card__image-wrap {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #ddd;
+  }
+
+  .artist-card__image {
+    transition: transform 0.2s ease;
+  }
+
+  .artist-card:hover .artist-card__image {
+    transform: scale(1.03);
+  }
+
+  .artist-card__image--placeholder {
+    background: #aaa;
+  }
+
+  .artist-card__name {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: var(--theme-font-size-large);
+    text-transform: uppercase;
+    text-decoration: underline;
+  }
+
+  @media screen and (max-width: 768px) {
+    .artists-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .artists-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.collections_grid",
-  "settings": [
+  "name": "Artists",
+  "settings": [],
+  "presets": [
     {
-      "type": "select",
-      "id": "grid_item_width",
-      "label": "t:labels.grid_item_width",
-      "options": [
-        { "value": "collections--compact", "label": "t:options.size.small" },
-        { "value": "collections--full", "label": "t:options.size.large" }
-      ],
-      "default": "collections--full"
-    },
-    {
-      "type": "range",
-      "id": "grid_gap",
-      "label": "t:labels.grid_gap",
-      "min": 0,
-      "max": 50,
-      "step": 5,
-      "unit": "px",
-      "default": 10
+      "name": "Artists"
     }
   ],
-  "presets": [{ "name": "t:general.collections_grid" }]
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
 }
 {% endschema %}

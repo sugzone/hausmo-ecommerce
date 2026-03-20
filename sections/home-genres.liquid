@@ -1,0 +1,165 @@
+{% comment %}
+  Home: Genres section.
+  Decorative text spans 2 columns × 2 rows of the genre grid.
+  Genre collection buttons fill the remaining grid cells.
+  Font size starts at 44px and scales down via JS (theme.js: scaleGenreButtons).
+{% endcomment %}
+
+<div class="home-section home-section--genres full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <h2 class="panel__header-title">{{ section.settings.header_text }}</h2>
+      </div>
+      <div class="panel__body">
+        <div class="genres-grid">
+          <!-- Decorative: spans 2 cols × 2 rows -->
+          <div class="genres-decorative" aria-hidden="true">
+            <p class="home-section__tagline">{{ section.settings.tagline }}</p>
+            <p class="home-section__wordmark">Hausu Mountain</p>
+          </div>
+
+          {%- for c in collections -%}
+            {%- if c.metafields.custom.type == 'genre' -%}
+              <a
+                href="{{ c.url }}"
+                class="genre-btn"
+                aria-label="{{ c.title }}"
+              >
+                {%- if c.featured_image -%}
+                  {{
+                    c.featured_image
+                    | image_url: width: 400, height: 400, crop: 'center'
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'genre-btn__bg img-cover',
+                      alt: '',
+                      aria-hidden: 'true'
+                  }}
+                {%- else -%}
+                  <div class="genre-btn__bg genre-btn__bg--placeholder" aria-hidden="true"></div>
+                {%- endif -%}
+                <span class="genre-btn__text" aria-hidden="true">{{ c.title }}</span>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* 4 cols, 5 rows of 90px each; decorative spans 2×2 */
+  .genres-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 90px);
+    column-gap: 1vw;
+    row-gap: 1vh;
+  }
+
+  .genres-decorative {
+    grid-column: span 2;
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    overflow: hidden;
+  }
+
+  .genre-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-decoration: none;
+    border-style: outset;
+    border-width: 2px;
+    border-color: #888;
+  }
+
+  .genre-btn:focus-visible {
+    outline: 3px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .genre-btn__bg {
+    position: absolute;
+    inset: 0;
+  }
+
+  .genre-btn__bg--placeholder {
+    background: #555;
+  }
+
+  /* Dark overlay so white text is readable over any image */
+  .genre-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .genre-btn__text {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 44px; /* JS scales this down as needed */
+    color: var(--color-white);
+    text-shadow:
+      -2px -2px 0 #000,
+       2px -2px 0 #000,
+      -2px  2px 0 #000,
+       2px  2px 0 #000;
+    letter-spacing: 0.16em;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    text-align: center;
+    line-height: 1.1;
+    padding: 0 0.5rem;
+  }
+
+  @media screen and (max-width: 768px) {
+    .genres-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .genres-decorative {
+      grid-column: 1 / -1;
+      grid-row: span 1;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Genres",
+  "settings": [
+    {
+      "type": "text",
+      "id": "header_text",
+      "label": "Section header text",
+      "default": "PERUSE THE HAUSMO CATALOG"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Decorative tagline",
+      "default": "Select A Zone From Our Lavish Menu"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Genres"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}
