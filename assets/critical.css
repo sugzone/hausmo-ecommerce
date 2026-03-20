@@ -327,7 +327,7 @@ a {
 .panel__body {
   padding: 2vh 3vw;
   background-color: var(--color-section-bg);
-  background-image: url('nnnoise.svg');
+  background-image: url('noise.svg');
 }
 
 /** Main content area */

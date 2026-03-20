@@ -509,11 +509,12 @@
   }
 
   .product-tracklist {
-    white-space: pre-line;
+    height: fit-content;
+    list-style-position: outside;
   }
 
-  .product-tracklist li {
-    line-height: 1.2;
+  .product-tracklist > * {
+    list-style-position: outside;
   }
 
   /* Complementary / related products */
