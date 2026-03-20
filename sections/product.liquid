@@ -46,7 +46,7 @@
               | image_url: width: 800, height: 800, crop: 'center'
               | image_tag:
                 loading: 'eager',
-                class: 'product-gallery__main-image',
+                class: 'product-gallery__main-image img-cover',
                 id: 'product-main-image',
                 alt: product.title
             }}
@@ -69,7 +69,7 @@
                   {{
                     image
                     | image_url: width: 120, height: 120, crop: 'center'
-                    | image_tag: loading: 'lazy', class: 'product-gallery__thumb-image', alt: ''
+                    | image_tag: loading: 'lazy', class: 'product-gallery__thumb-image img-cover', alt: ''
                   }}
                 </button>
               </li>
@@ -269,12 +269,6 @@
     margin-bottom: 0.75rem;
   }
 
-  .product-gallery__main-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
 
   .product-gallery__placeholder {
     width: 100%;
@@ -311,17 +305,7 @@
     border-color: var(--color-blue);
   }
 
-  .product-gallery__thumb:focus-visible {
-    outline: 2px solid var(--color-blue);
-    outline-offset: 2px;
-  }
 
-  .product-gallery__thumb-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
 
   /* Product info */
   .product-info {
@@ -332,7 +316,7 @@
 
   .product-info__artist {
     font-family: var(--font-sans);
-    font-size: 3rem;
+    font-size: var(--theme-font-size-2x-large);
     line-height: 1.1;
     margin: 0;
   }
@@ -350,7 +334,7 @@
   .product-info__title {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 3rem;
+    font-size: var(--theme-font-size-2x-large);
     line-height: 1.1;
     color: var(--color-black);
     margin: 0;
@@ -358,20 +342,20 @@
 
   .product-info__catalog {
     font-family: var(--font-mono);
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     font-weight: 400;
     color: var(--color-black);
   }
 
   .product-info__date {
     font-family: var(--font-mono);
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     color: var(--color-black);
   }
 
   .product-info__genres {
     font-family: var(--font-mono);
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     color: var(--color-black);
   }
 
@@ -384,7 +368,7 @@
   .product-info__price {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     color: var(--color-black);
   }
 
@@ -398,7 +382,7 @@
   .product-variants__label {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: var(--theme-font-size-small);
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     display: block;
@@ -418,8 +402,8 @@
   .variant-option__label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: var(--theme-font-size-large);
+    font-weight: 400;
     padding: 0.4rem 0.875rem;
     border: 2px solid var(--color-black);
     border-radius: 10px;
@@ -457,7 +441,7 @@
     background: var(--color-red);
     color: var(--color-white);
     font-family: var(--font-mono);
-    font-size: 2rem;
+    font-size: var(--theme-font-size-x-large);
     font-weight: 400;
     border: none;
     border-radius: 50px;
@@ -470,10 +454,6 @@
     background: #cc0003;
   }
 
-  .btn-add-to-cart:focus-visible {
-    outline: 2px solid var(--color-blue);
-    outline-offset: 2px;
-  }
 
   .btn-add-to-cart--sold-out {
     background: #666;
@@ -482,7 +462,7 @@
 
   .product-form__error {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: var(--theme-font-size-small);
     color: var(--color-red);
     margin: 0.5rem 0 0;
   }
@@ -516,7 +496,6 @@
 
   .product-details__heading {
     font-family: var(--font-pixel);
-    font-size: 0.625rem;
     color: var(--color-black);
     letter-spacing: 0.05em;
     margin: 0 0 0.75rem;
@@ -524,7 +503,7 @@
 
   .product-details__body {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: var(--theme-font-size-medium);
     line-height: 1.6;
     color: var(--color-black);
   }
@@ -540,7 +519,6 @@
   /* Complementary / related products */
   .product-complementary__heading {
     font-family: var(--font-pixel);
-    font-size: 0.75rem;
     font-weight: 400;
     color: var(--color-black);
     margin: 0 0 1rem;
@@ -570,7 +548,7 @@
   .product-complementary__inner .product-card__title,
   .product-complementary__inner .product-card__artist {
     font-family: var(--font-sans);
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     text-decoration: underline;
   }
 
@@ -596,23 +574,23 @@
 
     .product-info__title,
     .product-info__artist {
-      font-size: 1.5rem;
+      font-size: var(--theme-font-size-large);
     }
 
     .product-info__catalog,
     .product-info__date,
     .product-info__genres,
     .product-info__price {
-      font-size: 0.75rem;
+      font-size: var(--theme-font-size-x-small);
     }
 
     .variant-option__label {
-      font-size: 0.75rem;
+      font-size: var(--theme-font-size-x-small);
       padding: 0.75rem 0.875rem;
     }
 
     .btn-add-to-cart {
-      font-size: 0.75rem;
+      font-size: var(--theme-font-size-x-small);
       border-radius: 30px;
     }
 
@@ -621,7 +599,7 @@
     }
 
     .product-details__body {
-      font-size: 0.75rem;
+      font-size: var(--theme-font-size-x-small);
     }
 
     .product-complementary__inner {
@@ -636,7 +614,7 @@
 
     .product-complementary__inner .product-card__title,
     .product-complementary__inner .product-card__artist {
-      font-size: 0.75rem;
+      font-size: var(--theme-font-size-x-small);
     }
   }
 {% endstylesheet %}

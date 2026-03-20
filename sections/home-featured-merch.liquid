@@ -11,9 +11,9 @@
         <h2 class="panel__header-title">{{ section.settings.header_text }}</h2>
       </div>
       <div class="panel__body">
-        <div class="home-merch__grid">
+        <div class="home-section__grid">
           <!-- Decorative: spans first 2 columns of row 1 -->
-          <div class="home-merch__decorative" aria-hidden="true">
+          <div class="home-section__decorative home-section__decorative--merch" aria-hidden="true">
             <p class="home-section__tagline">{{ section.settings.tagline }}</p>
             <p class="home-section__wordmark">Hausu Mountain</p>
           </div>
@@ -40,45 +40,14 @@
 </div>
 
 {% stylesheet %}
-  /* 4 columns, 2 fixed-height rows; decorative spans cols 1–2 */
-  .home-merch__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 325px);
-    column-gap: 1vw;
-    row-gap: 1vh;
-  }
-
-  .home-merch__decorative {
-    grid-column: span 2;
-    display: flex;
+  .home-section__decorative--merch {
     flex-direction: column;
     justify-content: center;
-    gap: 1rem;
-    overflow: hidden;
   }
 
   /* Merch context: artist name also bold */
   .home-section--merch .product-card__artist {
     font-weight: 700;
-  }
-
-  @media screen and (max-width: 1024px) {
-    .home-merch__grid {
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: auto;
-    }
-
-    .home-merch__decorative {
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media screen and (max-width: 768px) {
-    .home-merch__grid {
-      grid-template-columns: repeat(2, 1fr);
-      column-gap: 2vw;
-    }
   }
 {% endstylesheet %}
 

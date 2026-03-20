@@ -23,7 +23,7 @@
                       | image_url: width: 400, height: 400, crop: 'center'
                       | image_tag:
                         loading: 'lazy',
-                        class: 'artist-card__image',
+                        class: 'artist-card__image img-cover',
                         alt: c.title
                     }}
                   {%- else -%}
@@ -54,7 +54,7 @@
 
   .artists-grid__empty {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: var(--theme-font-size-small);
     color: #666;
   }
 
@@ -78,10 +78,6 @@
   }
 
   .artist-card__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
     transition: transform 0.2s ease;
   }
 
@@ -96,7 +92,7 @@
   .artist-card__name {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: var(--theme-font-size-large);
     text-transform: uppercase;
     text-decoration: underline;
   }
