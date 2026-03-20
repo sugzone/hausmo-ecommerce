@@ -46,18 +46,18 @@
         </a>
 
         <a
-          href="{{ routes.collections_url }}/apparel"
-          class="header__nav-item{% if current_path contains '/collections/apparel' %} is-active{% endif %}"
-          {% if current_path contains '/collections/apparel' %}aria-current="page"{% endif %}
+          href="{{ routes.collections_url }}/merch"
+          class="header__nav-item{% if current_path contains '/collections/merch' %} is-active{% endif %}"
+          {% if current_path contains '/collections/merch' %}aria-current="page"{% endif %}
         >
           <img src="{{ 'apparel.svg' | asset_url }}" alt="" aria-hidden="true" class="header__nav-icon" width="48" height="48">
           <span class="header__nav-label">Merch</span>
         </a>
 
         <a
-          href="{{ routes.collections_url }}/artists"
-          class="header__nav-item{% if current_path contains '/collections/artists' %} is-active{% endif %}"
-          {% if current_path contains '/collections/artists' %}aria-current="page"{% endif %}
+          href="/pages/artists"
+          class="header__nav-item{% if current_path contains '/pages/artists' %} is-active{% endif %}"
+          {% if current_path contains '/pages/artists' %}aria-current="page"{% endif %}
         >
           <img src="{{ 'artists.svg' | asset_url }}" alt="" aria-hidden="true" class="header__nav-icon" width="48" height="48">
           <span class="header__nav-label">Artists</span>
