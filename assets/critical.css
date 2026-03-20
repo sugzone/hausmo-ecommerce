@@ -320,6 +320,7 @@ a {
 
 /** Main content area */
 #main-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--color-section-bg);

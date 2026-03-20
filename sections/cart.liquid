@@ -3,13 +3,13 @@
   Full cart view with item list, quantity updates, and checkout button.
 {% endcomment %}
 
-<div class="cart-page">
-  <div class="section-header-bar full-width">
-    <span class="section-header-bar__title">YOUR CART</span>
-  </div>
-
-  <div class="cart-page__body full-width">
-    <div class="cart-page__inner">
+<div class="cart-page full-width">
+  <div class="panel-page">
+    <div class="panel">
+      <div class="panel__header">
+        <h1 class="panel__header-title">YOUR CART</h1>
+      </div>
+      <div class="panel__body">
       {%- if cart.item_count == 0 -%}
         <p class="cart-page__empty">Your cart is empty. <a href="{{ routes.collections_url }}/music" class="cart-page__empty-link">Keep shopping</a></p>
       {%- else -%}
@@ -73,19 +73,14 @@
           </div>
         </form>
       {%- endif -%}
-    </div>
-  </div>
-</div>
+      </div>{%- comment %} panel__body {%- endcomment %}
+    </div>{%- comment %} panel {%- endcomment %}
+  </div>{%- comment %} panel-page {%- endcomment %}
+</div>{%- comment %} cart-page {%- endcomment %}
 
 {% stylesheet %}
-  .cart-page__body {
+  .cart-page {
     background: var(--color-section-bg);
-    padding: 2rem var(--page-margin);
-  }
-
-  .cart-page__inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
   }
 
   .cart-page__empty {
@@ -284,10 +279,6 @@
   }
 
   @media screen and (max-width: 768px) {
-    .cart-page__body {
-      padding: 1.5rem 1rem;
-    }
-
     .cart-item {
       grid-template-columns: 64px 1fr;
       grid-template-rows: auto auto;

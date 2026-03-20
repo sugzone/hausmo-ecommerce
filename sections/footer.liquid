@@ -1,9 +1,10 @@
-<footer class="site-footer" role="contentinfo">
+<footer class="site-footer full-width" role="contentinfo">
   <div class="footer__inner">
     <div class="footer__brand">
-      <p class="footer__wordmark">Hausu Mountain</p>
+      <a href="https://hausumountain.com" class="footer__wordmark" target="_blank" rel="noopener">Hausu Mountain</a>
       <p class="footer__copyright">
-        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.<br>
+        <a href="mailto:doug@hausumountain.com" class="footer__contact">Contact</a>
       </p>
       {%- if section.settings.show_payment_icons -%}
         <div class="footer__payment" aria-label="Accepted payment methods">
@@ -57,7 +58,30 @@
     font-weight: 700;
     font-size: 1.5rem;
     color: var(--color-white);
+    text-decoration: none;
+    display: inline-block;
     margin-bottom: 0.5rem;
+  }
+
+  .footer__wordmark:hover {
+    text-decoration: underline;
+  }
+
+  .footer__wordmark:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+  }
+
+  .footer__contact {
+    color: #aaa;
+    text-decoration: underline;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  .footer__contact:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
   }
 
   .footer__copyright {
