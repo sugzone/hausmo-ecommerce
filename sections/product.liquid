@@ -196,12 +196,12 @@
       </div>
     </div>
 
-    {%- comment %} Related products {%- endcomment %}
-    {%- if related != blank -%}
+    {%- comment %} Complementary products {%- endcomment %}
+    {%- if complementary != blank -%}
       <div class="product-complementary product-complementary--related">
         <h2 class="product-complementary__heading">Merch</h2>
         <ul class="product-complementary__inner">
-          {%- for rec_product in related.value limit: 6 -%}
+          {%- for rec_product in complementary.value limit: 6 -%}
             <li class="product-complementary__item">{%- render 'product-card', product: rec_product -%}</li>
           {%- endfor -%}
         </ul>
@@ -231,12 +231,12 @@
       </div>
     {%- endif -%}
 
-    {%- comment %} Complementary products {%- endcomment %}
-    {%- if complementary != blank -%}
+    {%- comment %} Related products {%- endcomment %}
+    {%- if related != blank -%}
       <div class="product-complementary product-complementary--complementary">
         <h2 class="product-complementary__heading">Recommended music</h2>
         <ul class="product-complementary__inner">
-          {%- for rec_product in complementary.value limit: 6 -%}
+          {%- for rec_product in related.value limit: 6 -%}
             <li class="product-complementary__item">{%- render 'product-card', product: rec_product -%}</li>
           {%- endfor -%}
         </ul>
